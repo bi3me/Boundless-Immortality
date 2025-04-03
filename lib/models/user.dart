@@ -56,7 +56,7 @@ class UserModel extends ChangeNotifier {
 
   /// Login with email & password
   Future<bool> login(String email, String password) async {
-    var response = await AuthHttpClient().post(
+    final response = await AuthHttpClient().post(
       AuthHttpClient.uri('login'),
       body: AuthHttpClient.form({'email': email, 'password': password}),
     );
@@ -78,7 +78,7 @@ class UserModel extends ChangeNotifier {
     String name,
     int attribute,
   ) async {
-    var response = await AuthHttpClient().post(
+    final response = await AuthHttpClient().post(
       AuthHttpClient.uri('register'),
       body: AuthHttpClient.form({
         'email': email,

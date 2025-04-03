@@ -4,6 +4,12 @@ import 'package:provider/provider.dart';
 
 import '../style/palette.dart';
 import '../style/responsive_screen.dart';
+import '../../common/constants.dart';
+import '../../models/market.dart';
+import '../../models/material.dart';
+import '../../models/kungfu.dart';
+import '../../models/elixir.dart';
+import '../../models/weapon.dart';
 
 class PlayMarketScreen extends StatefulWidget {
   const PlayMarketScreen({super.key});
@@ -13,23 +19,18 @@ class PlayMarketScreen extends StatefulWidget {
 }
 
 class PlayMarketState extends State<PlayMarketScreen> {
-  // 模拟的商品数据
-  List<Map<String, dynamic>> items = [
-    {'name': '青锋剑', 'price': 100, 'seller': '张三'},
-    {'name': '玄铁盾', 'price': 150, 'seller': '李四'},
-    {'name': '灵丹', 'price': 80, 'seller': '王五'},
-  ];
-
-  // 可供选择的物品列表
-  final List<String> availableItems = ['青锋剑', '玄铁盾', '灵丹', '火云袍', '风行靴'];
-
-  // 控制出售对话框的输入
-  String? _selectedItem; // 用于存储选择框选中的物品
-  final TextEditingController _priceController = TextEditingController();
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
+    final market = context.watch<MarketModel>();
+    final all = [
+      _showItems(market.materials.values.toList(), market),
+      _showItems(market.kungfus.values.toList(), market),
+      _showItems(market.elixirs.values.toList(), market),
+      _showItems(market.weapons.values.toList(), market),
+    ];
 
     return Scaffold(
       appBar: AppBar(title: const Text('坊市')),
@@ -37,66 +38,100 @@ class PlayMarketState extends State<PlayMarketScreen> {
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: ListTile(
-                      title: Text(items[index]['name']),
-                      subtitle: Text('卖家: ${items[index]['seller']}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('${items[index]['price']} 灵石'),
-                          SizedBox(width: 8),
-                          ElevatedButton(
-                            onPressed: () => _showBuyDialog(items[index]),
-                            child: Text('购买'),
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.symmetric(horizontal: 8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
+            SizedBox(
+              width: double.infinity,
+              child: SegmentedButton<int>(
+                segments: const [
+                  ButtonSegment(value: 0, label: Text('灵材')),
+                  ButtonSegment(value: 1, label: Text('功法')),
+                  ButtonSegment(value: 2, label: Text('丹药')),
+                  ButtonSegment(value: 3, label: Text('武器')),
+                ],
+                selected: {_selectedIndex},
+                onSelectionChanged: (newSelection) {
+                  setState(() {
+                    _selectedIndex = newSelection.first;
+                  });
                 },
+                style: ButtonStyle(
+                  shape: WidgetStateProperty.all(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
               ),
             ),
+            const SizedBox(height: 4.0),
+            Expanded(child: all[_selectedIndex]),
           ],
         ),
         rectangularMenuArea: FilledButton(
-          onPressed: _showSellDialog,
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext dialogContext) {
+                return CreateMarketDialog();
+              },
+            );
+          },
           child: const Text('出售商品'),
         ),
       ),
     );
   }
 
-  // 添加购买确认对话框
-  void _showBuyDialog(Map<String, dynamic> item) {
+  Widget _showItems(List<MarketItem> items, MarketModel market) {
+    return ListView.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            title: Text(items[index].itemName),
+            subtitle: Text("${attributes[items[index].itemAttribute]} 属性"),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("${items[index].coin} 灵石"),
+                SizedBox(width: 8),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed:
+                      () => _showBuyDialog(context, items[index], market),
+                  child: Text('购买'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // buy confirm
+  void _showBuyDialog(
+    BuildContext context,
+    MarketItem item,
+    MarketModel market,
+  ) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('确认购买'),
-          content: Text(
-            '确定要花费 ${item['price']} 灵石购买 ${item['name']} 吗？\n卖家: ${item['seller']}',
-          ),
+          content: Text("确定要花费 ${item.coin} 灵石购买 ${item.itemName} 吗？"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text('取消'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // 这里可以添加购买逻辑，比如扣除灵石、更新库存等
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text('成功购买 ${item['name']}')));
+              onPressed: () async {
+                await market.buy(item.mtype, item.id);
+                if (context.mounted) Navigator.pop(context);
               },
               child: Text('确认购买'),
             ),
@@ -105,71 +140,157 @@ class PlayMarketState extends State<PlayMarketScreen> {
       },
     );
   }
+}
 
-  void _showSellDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text('出售物品'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    value: _selectedItem,
-                    decoration: InputDecoration(labelText: '物品名称'),
-                    items: availableItems.map((String item) {
-                      return DropdownMenuItem<String>(
-                        value: item,
-                        child: Text(item),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedItem = newValue;
-                      });
-                    },
-                  ),
-                  TextField(
-                    controller: _priceController,
-                    decoration: InputDecoration(labelText: '价格(灵石)'),
-                    keyboardType: TextInputType.number,
-                  ),
+class CreateMarketDialog extends StatefulWidget {
+  const CreateMarketDialog({super.key});
+
+  @override
+  CreateMarketDialogState createState() => CreateMarketDialogState();
+}
+
+class CreateMarketDialogState extends State<CreateMarketDialog> {
+  final TextEditingController _coinController = TextEditingController();
+  int? _mtype;
+  int? _item;
+  List<(int, String)> _items = [];
+
+  String? _error;
+  bool _loading = false;
+
+  void _submitData(BuildContext context) async {
+    setState(() {
+      _error = null;
+    });
+    final mtype = _mtype ?? 0;
+    final item = _item ?? 0;
+    if (mtype < 1 || item < 1) {
+      setState(() {
+        _error = "No coin";
+      });
+      return;
+    }
+
+    final coin = int.parse(_coinController.text);
+    if (coin < 1) {
+      setState(() {
+        _error = "No coin";
+      });
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+    });
+
+    final res = await context.read<MarketModel>().create(mtype, item, coin);
+
+    _loading = false;
+    if (res) {
+      if (context.mounted) Navigator.of(context).pop();
+    } else {
+      setState(() {
+        _error = "Failure";
+      });
+    }
+  }
+
+  void changeMtype(BuildContext context, int? value) {
+    if (value == null) {
+      return;
+    }
+
+    switch (value) {
+      case 1:
+        _items = context.read<MaterialModel>().availableForSale();
+        break;
+      case 2:
+        _items = context.read<KungfuModel>().availableForSale();
+        break;
+      case 3:
+        _items = context.read<ElixirModel>().availableForSale();
+        break;
+      case 4:
+        _items = context.read<WeaponModel>().availableForSale();
+        break;
+      default:
+        break;
+    }
+
+    setState(() {
+      _mtype = value;
+      _item = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('擂台'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_mtype != null && _mtype != 1)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Text(
+                  '只有 提取(claim) 过的物品，才可以进行出售',
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ),
+            SizedBox(
+              width: double.infinity,
+              child: DropdownButton<int>(
+                isExpanded: true,
+                hint: Text("选择类型"),
+                value: _mtype,
+                onChanged: (i) => changeMtype(context, i),
+                items: [
+                  DropdownMenuItem<int>(value: 1, child: Text('灵材')),
+                  DropdownMenuItem<int>(value: 2, child: Text('功法')),
+                  DropdownMenuItem<int>(value: 3, child: Text('丹药')),
+                  DropdownMenuItem<int>(value: 4, child: Text('武器')),
                 ],
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('取消'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (_selectedItem != null && 
-                        _priceController.text.isNotEmpty) {
-                      setState(() {
-                        items.add({
-                          'name': _selectedItem!,
-                          'price': int.parse(_priceController.text),
-                          'seller': '我'
-                        });
-                      });
-                      _selectedItem = null;
-                      _priceController.clear();
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('物品已上架')),
-                      );
-                    }
-                  },
-                  child: Text('出售'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: DropdownButton<int>(
+                isExpanded: true,
+                hint: Text("选择物品"),
+                value: _item,
+                onChanged: (newRecipe) {
+                  setState(() {
+                    _item = newRecipe;
+                  });
+                },
+                items:
+                    _items.map((i) {
+                      final (k, v) = i;
+                      return DropdownMenuItem<int>(value: k, child: Text(v));
+                    }).toList(),
+              ),
+            ),
+            TextFormField(
+              controller: _coinController,
+              decoration: InputDecoration(labelText: '灵石'),
+            ),
+            const SizedBox(height: 10),
+            if (_error != null) Text(_error ?? ''),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('取消'),
+        ),
+        ElevatedButton(
+          onPressed: _loading ? null : () => _submitData(context),
+          child: Text(_loading ? '出售中' : '出售'),
+        ),
+      ],
     );
   }
 }

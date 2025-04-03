@@ -1,9 +1,13 @@
+import 'package:boundless_immortality/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../style/palette.dart';
 import '../style/responsive_screen.dart';
+import '../../models/elixir.dart';
+import '../../models/material.dart';
+import '../../common/constants.dart';
 
 class PlayElixirScreen extends StatefulWidget {
   // const PlayKungfuScreen({Key? key}) : super(key: key);
@@ -14,101 +18,87 @@ class PlayElixirScreen extends StatefulWidget {
 }
 
 class PlayElixirState extends State<PlayElixirScreen> {
-  final List<String> ingredients = List.generate(
-    20,
-    (index) => "材料 ${index + 1}",
-  );
-  List<String> selectedIngredients = [];
-  int alchemistLevel = 3; // 炼丹师等级，决定可用格子
-  int experience = 50; // 当前经验值
-  int nextLevelExp = 100; // 下一级经验值
+  int myLevel = 0;
+  bool _loading = false;
+  int? _selectedElixir;
 
-  // 预定义丹方
-  final Map<String, List<String>> recipes = {
-    "回春丹": ["材料 1", "材料 3", "材料 5"],
-    "聚灵丹": ["材料 2", "材料 4", "材料 6", "材料 8"],
-    "玄元丹": ["材料 7", "材料 9", "材料 11", "材料 13", "材料 15"],
-  };
-  String? selectedRecipe;
-
+  Map<int, int> selectedMaterialsNum = {};
+  List<int> selectedMaterialsIds = [];
+  Map<int, int> tmpMaterialsNum = {};
 
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
+    final materials = context.watch<MaterialModel>().elixirsItems;
+    final elixirs = context.watch<ElixirModel>();
+    if (tmpMaterialsNum.isEmpty && materials.isNotEmpty) {
+      materials.forEach((k, v) {
+        tmpMaterialsNum[k] = v.number;
+      });
+    }
+    myLevel = context.watch<UserModel>().level;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('炼丹')),
+      appBar: AppBar(title: Text("炼丹 (${levels[myLevel]})")),
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildExperienceBar(),
-            _buildRecipeSelection(),
-            _buildAlchemyGrid(),
+            _buildRecipeSelection(elixirs.items),
+            _buildAlchemyGrid(materials),
+            Divider(),
+            _buildMaterialsSelection(materials.values.toList()),
             SizedBox(height: 20),
-            _buildIngredientSelection(),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: selectedIngredients.isNotEmpty ? _startAlchemy : null,
-              child: Text("开始炼丹"),
-            ),
           ],
         ),
         rectangularMenuArea: FilledButton(
-          onPressed: () {
-            GoRouter.of(context).go('/play');
-          },
-          child: const Text('Action'),
+          onPressed:
+              selectedMaterialsIds.isEmpty || _loading
+                  ? null
+                  : () {
+                    _selectedElixir != null
+                        ? _startAlchemy(context, elixirs)
+                        : showDialog(
+                          context: context,
+                          builder: (BuildContext dialogContext) {
+                            return CreateCharacterDialog(selectedMaterialsNum);
+                          },
+                        );
+                  },
+          child: Text(_loading ? '炼丹中' : '炼丹'),
         ),
       ),
     );
   }
 
-   Widget _buildExperienceBar() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("当前: $alchemistLevel 级, 经验值: $experience / $nextLevelExp"),
-          LinearProgressIndicator(
-            value: experience / nextLevelExp,
-            backgroundColor: Colors.grey[300],
-            color: Colors.blue,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecipeSelection() {
+  Widget _buildRecipeSelection(Map<int, ElixirItem> items) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
         width: double.infinity,
-        child: DropdownButton<String>(
+        child: DropdownButton<int>(
           isExpanded: true,
           hint: Text("选择丹方"),
-          value: selectedRecipe,
+          value: _selectedElixir,
           onChanged: (newRecipe) {
             setState(() {
-              selectedRecipe = newRecipe;
-              selectedIngredients = List.from(recipes[newRecipe!] ?? []);
+              _selectedElixir = newRecipe;
+              // TODO check materials
+              // selectedIngredients = List.from(recipes[newRecipe!] ?? []);
             });
           },
-          items:
-              recipes.keys.map((recipe) {
-                return DropdownMenuItem<String>(
-                  value: recipe,
-                  child: Text(recipe.isEmpty ? "无" : recipe),
-                );
-              }).toList(),
+          items: items.values.map((item) {
+              return DropdownMenuItem<int>(
+                value: item.elixirId,
+                child: Text(item.name),
+              );
+          }).toList(),
         ),
       ),
     );
   }
 
-  Widget _buildAlchemyGrid() {
+  Widget _buildAlchemyGrid(Map<int, MaterialItem> items) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GridView.builder(
@@ -121,32 +111,32 @@ class PlayElixirState extends State<PlayElixirScreen> {
         ),
         itemCount: 8,
         itemBuilder: (context, index) {
-          bool isUnlocked = index < alchemistLevel + 2; // 可用格子数量取决于炼丹师等级
-          return GestureDetector(
-            onTap: isUnlocked && index < selectedIngredients.length
-                ? () => setState(() => selectedIngredients.removeAt(index))
-                : null,
-            child: Container(
-              decoration: BoxDecoration(
-                color: isUnlocked
-                    ? (index < selectedIngredients.length ? Colors.green[200] : Colors.white)
-                    : Colors.grey[400],
-                border: Border.all(color: Colors.black),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                index < selectedIngredients.length ? selectedIngredients[index] : (isUnlocked ? "可放置" : "锁定"),
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
+          bool islocked = index > myLevel - 1;
+          int id = 0;
+          String name = islocked ? '/' : '可放置';
+          int attribute = 0;
+          int number = 0;
+          if (index < selectedMaterialsIds.length) {
+            id = selectedMaterialsIds[index];
+            name = items[id]?.name ?? '';
+            attribute = items[id]?.attribute ?? 0;
+            number = selectedMaterialsNum[id] ?? 0;
+          }
+
+          return MaterialItemWidget(
+            id,
+            name,
+            attribute,
+            number,
+            _removeItem,
+            islocked,
           );
         },
       ),
     );
   }
 
-  Widget _buildIngredientSelection() {
+  Widget _buildMaterialsSelection(List<MaterialItem> items) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -157,20 +147,16 @@ class PlayElixirState extends State<PlayElixirScreen> {
             mainAxisSpacing: 8,
             childAspectRatio: 1,
           ),
-          itemCount: ingredients.length,
+          itemCount: items.length,
           itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: selectedIngredients.length < alchemistLevel + 2
-                  ? () => setState(() => selectedIngredients.add(ingredients[index]))
-                  : null,
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: Text(ingredients[index], style: TextStyle(fontSize: 14)),
-              ),
+            final id = items[index].materialId;
+            return MaterialItemWidget(
+              id,
+              items[index].name,
+              items[index].attribute,
+              tmpMaterialsNum[id] ?? 0,
+              _addItem,
+              false,
             );
           },
         ),
@@ -178,24 +164,142 @@ class PlayElixirState extends State<PlayElixirScreen> {
     );
   }
 
-  void _startAlchemy() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("炼丹成功！"),
-          content: Text("你使用了 ${selectedIngredients.join(", ")} 进行炼丹。"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() => selectedIngredients.clear());
-                Navigator.of(context).pop();
-              },
-              child: Text("关闭"),
+  void _removeItem(int index) {
+    final n = selectedMaterialsNum[index];
+    if (n == null) {
+      return;
+    }
+
+    final tn = tmpMaterialsNum[index] ?? 0;
+    tmpMaterialsNum[index] = tn + 1;
+
+    if (n < 2) {
+      selectedMaterialsNum.remove(index);
+      selectedMaterialsIds.remove(index);
+    } else {
+      selectedMaterialsNum[index] = n - 1;
+    }
+    setState(() {});
+  }
+
+  void _addItem(int index) {
+    final tn = tmpMaterialsNum[index] ?? 0;
+    if (tn < 1) {
+      return;
+    }
+    tmpMaterialsNum[index] = tn - 1;
+
+    final n = selectedMaterialsNum[index] ?? 0;
+    if (n >= myLevel) {
+      return;
+    }
+
+    if (n == 0) {
+      selectedMaterialsNum[index] = 1;
+      selectedMaterialsIds.add(index);
+    } else {
+      selectedMaterialsNum[index] = n + 1;
+    }
+
+    // check level
+    if (selectedMaterialsIds.length > myLevel) {
+      final fid = selectedMaterialsIds.removeAt(0);
+      final fsn = selectedMaterialsNum.remove(fid) ?? 0;
+      final ftn = tmpMaterialsNum[fid] ?? 0;
+      tmpMaterialsNum[fid] = ftn + fsn;
+    }
+
+    setState(() {});
+  }
+
+  void _startAlchemy(BuildContext context, ElixirModel elixirs) async {
+    setState(() {
+      _loading = true;
+    });
+
+    final res = await elixirs.create(selectedMaterialsNum, "");
+
+    _loading = false;
+    if (res) {
+      // success
+    }
+  }
+}
+
+class CreateCharacterDialog extends StatefulWidget {
+  final Map<int, int> materials;
+
+  const CreateCharacterDialog(this.materials, {super.key});
+
+  @override
+  CreateCharacterDialogState createState() => CreateCharacterDialogState();
+}
+
+class CreateCharacterDialogState extends State<CreateCharacterDialog> {
+  final TextEditingController _nameController = TextEditingController();
+  String? _error;
+  bool _loading = false;
+
+  void _submitData(BuildContext context) async {
+    setState(() {
+      _error = null;
+    });
+
+    final name = _nameController.text;
+    if (name.isEmpty || name.length > 20) {
+      setState(() {
+        _error = "Empty or too long";
+      });
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+    });
+
+    final res = await context.read<ElixirModel>().create(
+      widget.materials,
+      name,
+    );
+
+    _loading = false;
+    if (res) {
+      if (context.mounted) Navigator.of(context).pop();
+    } else {
+      setState(() {
+        _error = "Failure";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('全新丹药'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("木属性，战力总和 100, 修为增加 100"),
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: '赐名'),
             ),
+            const SizedBox(height: 10),
+            if (_error != null) Text(_error ?? ''),
           ],
-        );
-      },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('取消'),
+        ),
+        ElevatedButton(
+          onPressed: _loading ? null : () => _submitData(context),
+          child: Text(_loading ? '炼制中' : '炼制'),
+        ),
+      ],
     );
   }
 }

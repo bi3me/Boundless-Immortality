@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 
 import '../style/palette.dart';
 import '../style/responsive_screen.dart';
+import '../../models/weapon.dart';
+import '../../models/user.dart';
+import '../../common/constants.dart';
 
 class PlayWeaponScreen extends StatefulWidget {
   const PlayWeaponScreen({super.key});
@@ -16,56 +19,28 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
   @override
   Widget build(BuildContext context) {
     final palette = context.watch<Palette>();
+    final user = context.read<UserModel>();
+    final weapon = context.watch<WeaponModel>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('法宝')),
       body: ResponsiveScreen(
-        squarishMainArea: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ExpansionTile(
-              title: Text('手拿：天皇宝剑'),
-              subtitle: Text('攻击+10, 防御+10, 闪避+10, 暴击+10'),
-              trailing: Text('元婴'),
-              children: _buildOtherSkills(),
-            ),
-            ExpansionTile(
-              title: Text('头戴：天皇宝盖'),
-              subtitle: Text('攻击+10, 防御+10, 闪避+10, 暴击+10'),
-              trailing: Text('元婴'),
-              children: _buildOtherSkills(),
-            ),
-            ExpansionTile(
-              title: Text('身穿：天皇宝甲'),
-              subtitle: Text('攻击+10, 防御+10, 闪避+10, 暴击+10'),
-              trailing: Text('元婴'),
-              children: _buildOtherSkills(),
-            ),
-            ExpansionTile(
-              title: Text('左臂：天皇手具'),
-              subtitle: Text('攻击+10, 防御+10, 闪避+10, 暴击+10'),
-              trailing: Text('元婴'),
-              children: _buildOtherSkills(),
-            ),
-            ExpansionTile(
-              title: Text('右臂：地皇手具'),
-              subtitle: Text('攻击+10, 防御+10, 闪避+10, 暴击+10'),
-              trailing: Text('金丹'),
-              children: _buildOtherSkills(),
-            ),
-            ExpansionTile(
-              title: Text('左腿：地皇手具'),
-              subtitle: Text('攻击+10, 防御+10, 闪避+10, 暴击+10'),
-              trailing: Text('金丹'),
-              children: _buildOtherSkills(),
-            ),
-            ExpansionTile(
-              title: Text('右腿：地皇手具'),
-              subtitle: Text('攻击+10, 防御+10, 闪避+10, 暴击+10'),
-              trailing: Text('金丹'),
-              children: _buildOtherSkills(),
-            ),
-          ],
+        squarishMainArea: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List.generate(8, (index) {
+              final pos = index + 1;
+              final posList = weapon.poses[pos] ?? [0];
+              final first = weapon.items[posList[0]];
+              final isWorking = first?.working ?? false;
+              final firstname = isWorking ? first?.name : '';
+              return ExpansionTile(
+                title: Text("${weaponPos[pos]}: $firstname"),
+                trailing: Text(levels[first?.level ?? 0]),
+                children: _buildOtherSkills(posList, weapon, user),
+              );
+            }),
+          ),
         ),
         rectangularMenuArea: FilledButton(
           onPressed: () {
@@ -77,14 +52,34 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
     );
   }
 
-  List<Widget> _buildOtherSkills() {
-    List<String> otherSkills = ["玄天剑诀", "九阳真经", "混元功"];
+  List<Widget> _buildOtherSkills(
+    List<int> list,
+    WeaponModel weapon,
+    UserModel user,
+  ) {
+    return list.map((index) {
+      final item = weapon.items[index];
+      final id = item?.weaponId ?? 0;
+      final pos = item?.pos ?? 0;
+      final working = item?.working ?? false;
+      final hp = item?.powerHp ?? 0;
+      final attack = item?.powerAttack ?? 0;
+      final defense = item?.powerDefense ?? 0;
+      final hit = item?.powerHit ?? 0;
+      final dodge = item?.powerDodge ?? 0;
 
-    return otherSkills.map((skill) {
       return ListTile(
-        title: Text(skill),
-        subtitle: Text('攻击+10, 防御+10, 闪避+10, 暴击+10'),
-        trailing: ElevatedButton(onPressed: () {}, child: Text("穿戴"))
+        title: Text(item?.name ?? ''),
+        subtitle: item != null ? Text('生命+$hp, 攻击+$attack, 防御+$defense, 暴击+$hit, 闪避+$dodge') : null,
+        trailing:
+            item != null && !working
+                ? ElevatedButton(
+                  onPressed: () async {
+                    await weapon.change(pos, id, user);
+                  },
+                  child: Text("穿戴"),
+                )
+                : null,
       );
     }).toList();
   }

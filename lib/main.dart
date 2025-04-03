@@ -33,7 +33,7 @@ import 'screens/travel/travel_screen.dart';
 import 'models/broadcast.dart';
 import 'models/duel.dart';
 import 'models/elixir.dart';
-import 'models/friend.dart';
+// import 'models/friend.dart';
 import 'models/kungfu.dart';
 import 'models/market.dart';
 import 'models/material.dart';
@@ -133,41 +133,42 @@ class MyApp extends StatelessWidget {
                 builder: (context, state) {
                   context.read<KungfuModel>().load();
                   return const PlayKungfuScreen(key: Key('play_kungfu'));
-                }
+                },
               ),
               GoRoute(
                 path: 'weapon',
                 builder: (context, state) {
                   context.read<WeaponModel>().load();
                   return const PlayWeaponScreen(key: Key('play_weapon'));
-                }
+                },
               ),
               GoRoute(
                 path: 'bag',
                 builder: (context, state) {
                   context.read<MaterialModel>().load();
                   return const PlayBagScreen(key: Key('play_bag'));
-                }
+                },
               ),
               GoRoute(
                 path: 'elixir',
                 builder: (context, state) {
                   context.read<ElixirModel>().load();
                   return const PlayElixirScreen(key: Key('play_elixir'));
-                }
+                },
               ),
               GoRoute(
                 path: 'forging',
                 builder: (context, state) {
                   context.read<WeaponModel>().load();
                   return const PlayForgingScreen(key: Key('play_forging'));
-                }
+                },
               ),
               GoRoute(
                 path: 'duel',
-                builder:
-                    (context, state) =>
-                        const PlayDuelScreen(key: Key('play_duel')),
+                builder: (context, state) {
+                  context.read<DuelModel>().load();
+                  return const PlayDuelScreen(key: Key('play_duel'));
+                },
               ),
               GoRoute(
                 path: 'friend',
@@ -183,15 +184,17 @@ class MyApp extends StatelessWidget {
               ),
               GoRoute(
                 path: 'market',
-                builder:
-                    (context, state) =>
-                        const PlayMarketScreen(key: Key('play_market')),
+                builder: (context, state) {
+                  context.read<MarketModel>().load();
+                  return const PlayMarketScreen(key: Key('play_market'));
+                },
               ),
               GoRoute(
                 path: 'travel',
-                builder:
-                    (context, state) =>
-                        const PlayTravelScreen(key: Key('play_travel')),
+                builder: (context, state) {
+                  context.read<TravelModel>().load();
+                  return const PlayTravelScreen(key: Key('play_travel'));
+                },
               ),
             ],
           ),
@@ -215,7 +218,6 @@ class MyApp extends StatelessWidget {
       ),
     ],
   );
-
 
   final SettingsPersistence settingsPersistence;
 
@@ -241,6 +243,9 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (context) => ElixirModel()),
           ChangeNotifierProvider(create: (context) => WeaponModel()),
           ChangeNotifierProvider(create: (context) => MaterialModel()),
+          ChangeNotifierProvider(create: (context) => DuelModel()),
+          ChangeNotifierProvider(create: (context) => MarketModel()),
+          ChangeNotifierProvider(create: (context) => TravelModel()),
           // Provider<AdsController?>.value(value: adsController),
           // ChangeNotifierProvider<InAppPurchaseController?>.value(
           //   value: inAppPurchaseController,

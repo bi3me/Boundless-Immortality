@@ -1,4 +1,6 @@
+import 'package:boundless_immortality/common/constants.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../common/auth_http.dart';
 
@@ -35,6 +37,27 @@ class MaterialModel extends ChangeNotifier {
   Map<int, MaterialItem> elixirsItems = {};
   Map<int, MaterialItem> weaponItems = {};
 
+  List<MaterialItem> get items => [
+    ...elixirsItems.values,
+    ...weaponItems.values,
+  ];
+
+  List<(int, String)> availableForSale() {
+    List<(int, String)> list = [];
+    elixirsItems.forEach((_, v) {
+      if (v.number > 0) {
+        list.add((v.materialId, v.name));
+      }
+    });
+    weaponItems.forEach((_, v) {
+      if (v.number > 0) {
+        list.add((v.materialId, v.name));
+      }
+    });
+
+    return list;
+  }
+
   void elixirUsed(Map<int, int> items) {
     items.forEach((k, v) {
       elixirsItems[k]?.number -= v;
@@ -51,8 +74,11 @@ class MaterialModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Update user data from network (fully info)
-  void fromNetwork(Map<String, dynamic> item) {
+  void recycle(int id) async {
+    //
+  }
+
+  static MaterialItem parseNetwork(Map<String, dynamic> item) {
     final materialId = item['material_id'];
     final number = item['num'];
     final name = item['name'];
@@ -60,7 +86,7 @@ class MaterialModel extends ChangeNotifier {
     final attribute = item['attribute'];
     final levelAdd = item['level_add'];
     final powersZip = item['powers'];
-    final mitem = MaterialItem(
+    return MaterialItem(
       materialId,
       number,
       name,
@@ -69,13 +95,18 @@ class MaterialModel extends ChangeNotifier {
       levelAdd,
       powersZip,
     );
+  }
 
-    switch (mtype) {
+  /// Update user data from network (fully info)
+  void fromNetwork(Map<String, dynamic> item) {
+    final mitem = parseNetwork(item);
+
+    switch (mitem.mtype) {
       case 1:
-        elixirsItems[materialId] = mitem;
+        elixirsItems[mitem.materialId] = mitem;
         break;
       case 2:
-        weaponItems[materialId] = mitem;
+        weaponItems[mitem.materialId] = mitem;
         break;
       default:
         break;
@@ -85,7 +116,7 @@ class MaterialModel extends ChangeNotifier {
   /// Loading kungfus
   Future<void> load() async {
     if (elixirsItems.isEmpty && weaponItems.isEmpty) {
-      var response = await AuthHttpClient().get(
+      final response = await AuthHttpClient().get(
         AuthHttpClient.uri('users/materials'),
       );
 
@@ -98,5 +129,86 @@ class MaterialModel extends ChangeNotifier {
         notifyListeners();
       }
     }
+  }
+}
+
+class MaterialItemWidget extends StatelessWidget {
+  final int id;
+  final String name;
+  final int attribute;
+  final int number;
+  final bool lock;
+  final Function(int) onClick;
+
+  const MaterialItemWidget(
+    this.id,
+    this.name,
+    this.attribute,
+    this.number,
+    this.onClick,
+    this.lock, {
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: !lock && number != 0 ? () => onClick(id) : null,
+      child: Container(
+        decoration: BoxDecoration(
+          color:
+              lock
+                  ? Colors.grey[400]
+                  : (attribute != 0
+                      ? (number == 0 ? Colors.grey[200] : Colors.blue[200])
+                      : Colors.white),
+          border: Border.all(color: Colors.black),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Center(child: Text(name, style: TextStyle(fontSize: 14))),
+            ),
+            if (attribute != 0)
+              Positioned(
+                left: 2,
+                top: 2,
+                child: Container(
+                  height: 20,
+                  width: 20,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withAlpha(100),
+                    borderRadius: BorderRadius.circular(25.0),
+                  ),
+                  child: Text(
+                    attributes[attribute],
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ),
+            if (number != 0)
+              Positioned(
+                right: 2,
+                bottom: 2,
+                child: Container(
+                  height: 20,
+                  width: 20,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withAlpha(100),
+                    borderRadius: BorderRadius.circular(25.0),
+                  ),
+                  child: Text(
+                    "$number",
+                    style: TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }

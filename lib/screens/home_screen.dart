@@ -29,11 +29,13 @@ class PlayState extends State<PlayScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildProfileHeader(user),
-            SizedBox(height: 20),
+            const SizedBox(height: 10),
+            _buildExperienceBar(user.level, user.levelNum),
+            const SizedBox(height: 10),
             _buildStatsRow(user),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildActionButtons(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -44,7 +46,7 @@ class PlayState extends State<PlayScreen> {
         ),
         rectangularMenuArea: FilledButton(
           onPressed: () {
-            GoRouter.of(context).go('/');
+            GoRouter.of(context).go('/play/travel');
           },
           child: const Text('游历'),
         ),
@@ -61,11 +63,26 @@ class PlayState extends State<PlayScreen> {
           // backgroundImage: AssetImage("assets/logo.png"), // 头像
         ),
         SizedBox(width: 20),
-        Text(
-          "${levels[user.level]}•${user.name}",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
+        Text(user.name, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
       ],
+    );
+  }
+
+  Widget _buildExperienceBar(int level, int levelNum) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("当前: ${levels[level]}, 修为: $levelNum / ${levelsNum[level]}"),
+          const SizedBox(height: 4),
+          LinearProgressIndicator(
+            value: levelNum / levelsNum[level],
+            backgroundColor: Colors.grey[300],
+            color: Colors.blue,
+          ),
+        ],
+      ),
     );
   }
 
@@ -73,10 +90,18 @@ class PlayState extends State<PlayScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _buildStatItem("修为", user.levelNum),
         _buildStatItem("加速", user.levelUp),
         _buildStatItem("战力", user.power),
         _buildStatItem("仙石", user.coin),
+        Column(
+          children: [
+            Text(
+              attributes[user.attribute],
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text('灵根', style: TextStyle(color: Colors.grey)),
+          ],
+        ),
       ],
     );
   }
@@ -101,8 +126,8 @@ class PlayState extends State<PlayScreen> {
       ('炼丹', 'elixir'),
       ('炼器', 'forging'),
       ('决斗', 'duel'),
-      ('好友', 'friend'),
-      ('道侣', 'mate'),
+      //('好友', 'friend'),
+      //('道侣', 'mate'),
       ('坊市', 'market'),
     ];
     return GridView.builder(
@@ -110,7 +135,7 @@ class PlayState extends State<PlayScreen> {
       physics: NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        childAspectRatio: 2,
+        childAspectRatio: 2.5,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
@@ -119,7 +144,7 @@ class PlayState extends State<PlayScreen> {
         var (name, route) = actions[index];
         return ElevatedButton(
           style: ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll<Color>(Color(0xffbfc8e3)),
+            // backgroundColor: WidgetStatePropertyAll<Color>(Color(0xffbfc8e3)),
           ),
           onPressed: () {
             GoRouter.of(context).go('/play/$route');

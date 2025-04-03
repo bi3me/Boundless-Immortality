@@ -29,7 +29,7 @@ class BroadcastModel extends ChangeNotifier {
 
   /// Loading after login/register and timer
   Future<void> load() async {
-    var response = await AuthHttpClient().get(
+    final response = await AuthHttpClient().get(
       AuthHttpClient.uri('users/broadcast'),
     );
 

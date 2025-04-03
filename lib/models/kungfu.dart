@@ -69,9 +69,23 @@ class KungfuModel extends ChangeNotifier {
     }
   }
 
+  List<(int, String)> availableForSale() {
+    List<(int, String)> list = [];
+    items.forEach((_, v) {
+      if (
+        v.nftOwner != null &&
+        ((v.number > 1 && v.working) || (v.number > 0 && !v.working))
+      ) {
+        list.add((v.kungfuId, v.nftName ?? v.name));
+      }
+    });
+
+    return list;
+  }
+
   Future<void> change(int kungfuId, UserModel user) async {
     // send to service
-    var response = await AuthHttpClient().post(
+    final response = await AuthHttpClient().post(
       AuthHttpClient.uri("users/kungfus-change/$kungfuId"),
     );
 
@@ -96,7 +110,7 @@ class KungfuModel extends ChangeNotifier {
     int hit,
     int dodge,
   ) async {
-    var response = await AuthHttpClient().post(
+    final response = await AuthHttpClient().post(
       AuthHttpClient.uri('users/kungfus'),
       body: AuthHttpClient.form({
         'name': name,
@@ -151,7 +165,7 @@ class KungfuModel extends ChangeNotifier {
   /// Loading kungfus
   Future<void> load() async {
     if (items.isEmpty) {
-      var response = await AuthHttpClient().get(
+      final response = await AuthHttpClient().get(
         AuthHttpClient.uri('users/kungfus'),
       );
 

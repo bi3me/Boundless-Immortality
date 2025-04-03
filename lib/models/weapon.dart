@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'user.dart';
 import '../common/auth_http.dart';
 
 class WeaponItem {
@@ -45,19 +46,77 @@ class WeaponItem {
       }),
     );
   }
+
+  static String materialsZip(Map<int, int> map) {
+    List<String> zip = [];
+    map.forEach((k, v) {
+      zip.add("$k-$v");
+    });
+
+    return zip.join('_');
+  }
 }
 
 class WeaponModel extends ChangeNotifier {
   Map<int, WeaponItem> items = {};
-  Map<int, int> pos = {};
+  Map<int, List<int>> poses = {};
 
-  void change(int weaponId) {
+  List<(int, String)> availableForSale() {
+    List<(int, String)> list = [];
+    items.forEach((_, v) {
+      if (v.nftOwner != null &&
+          ((v.number > 1 && v.working) || (v.number > 0 && !v.working))) {
+        list.add((v.weaponId, v.nftName ?? v.name));
+      }
+    });
+
+    return list;
+  }
+
+  Future<void> change(int pos, int weaponId, UserModel user) async {
+    if (items[weaponId]?.pos != pos) {
+      return;
+    }
+
     items[weaponId]?.working = true;
-    items[pos[items[weaponId]?.pos]]?.working = false;
+    items[poses[pos]?[0]]?.working = false;
 
-    // TODO send to service
+    poses[pos]?.remove(weaponId);
+    poses[pos]?.insert(0, weaponId);
 
-    notifyListeners();
+    // send to service
+    final response = await AuthHttpClient().post(
+      AuthHttpClient.uri("users/weapons-wear/$weaponId"),
+    );
+
+    final data = AuthHttpClient.res(response);
+    if (data == null) {
+      // none
+    } else {
+      user.fromNetwork(data); // update user
+      notifyListeners();
+    }
+  }
+
+  Future<bool> create(Map<int, int> materials, String name, int pos) async {
+    final materialsZip = WeaponItem.materialsZip(materials);
+    final response = await AuthHttpClient().post(
+      AuthHttpClient.uri('users/weapons'),
+      body: AuthHttpClient.form({
+        'name': name,
+        'pos': pos,
+        'materials_zip': materialsZip,
+      }),
+    );
+
+    final data = AuthHttpClient.res(response);
+    if (data == null) {
+      return false;
+    } else {
+      fromNetwork(data);
+      notifyListeners();
+      return true;
+    }
   }
 
   /// Update user data from network (fully info)
@@ -95,17 +154,27 @@ class WeaponModel extends ChangeNotifier {
       nftOwner,
       nftName,
     );
+
+    final has = poses[pos]?.contains(weaponId) ?? false;
+    if (!has) {
+      if (poses[pos] == null) {
+        poses[pos] = [weaponId];
+      } else {
+        poses[pos]?.add(weaponId);
+      }
+    }
   }
 
   /// Loading kungfus
   Future<void> load() async {
     if (items.isEmpty) {
-      var response = await AuthHttpClient().get(
+      final response = await AuthHttpClient().get(
         AuthHttpClient.uri('users/weapons'),
       );
 
       final data = AuthHttpClient.res(response);
       if (data != null) {
+        poses.clear();
         for (var item in data['data']) {
           fromNetwork(item);
         }

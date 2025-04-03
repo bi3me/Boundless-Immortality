@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import 'user.dart';
 import '../common/auth_http.dart';
 
 class ElixirItem {
@@ -43,20 +44,66 @@ class ElixirItem {
       }),
     );
   }
+
+  static String materialsZip(Map<int, int> map) {
+    List<String> zip = [];
+    map.forEach((k, v) {
+      zip.add("$k-$v");
+    });
+
+    return zip.join('_');
+  }
 }
 
 class ElixirModel extends ChangeNotifier {
   Map<int, ElixirItem> items = {};
 
-  void eat(int elixirId) {
+  List<(int, String)> availableForSale() {
+    List<(int, String)> list = [];
+    items.forEach((_, v) {
+      if (v.nftOwner != null && v.number > 1) {
+        list.add((v.elixirId, v.nftName ?? v.name));
+      }
+    });
+
+    return list;
+  }
+
+  void eat(int elixirId, UserModel user) async {
     items[elixirId]?.number -= 1;
     if (items[elixirId]?.number == 0) {
       items.remove(elixirId);
     }
 
-    // TODO send to service
+    // send to service
+    var response = await AuthHttpClient().post(
+      AuthHttpClient.uri("users/elixirs-eat/$elixirId"),
+    );
 
-    notifyListeners();
+    final data = AuthHttpClient.res(response);
+    if (data == null) {
+      // none
+    } else {
+      user.fromNetwork(data); // update user
+      notifyListeners();
+    }
+  }
+
+  Future<bool> create(Map<int, int> materials, String name) async {
+    final materialsZip = ElixirItem.materialsZip(materials);
+    var response = await AuthHttpClient().post(
+      AuthHttpClient.uri('users/elixirs'),
+      body: AuthHttpClient.form({'name': name, 'materials_zip': materialsZip}),
+    );
+
+    final data = AuthHttpClient.res(response);
+    if (data == null) {
+      return false;
+    } else {
+      fromNetwork(data);
+      notifyListeners();
+      return true;
+    }
   }
 
   /// Update user data from network (fully info)
@@ -97,7 +144,7 @@ class ElixirModel extends ChangeNotifier {
   /// Loading elixirs
   Future<void> load() async {
     if (items.isEmpty) {
-      var response = await AuthHttpClient().get(
+      final response = await AuthHttpClient().get(
         AuthHttpClient.uri('users/elixirs'),
       );
 
