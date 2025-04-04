@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'user.dart';
 import '../common/auth_http.dart';
 
+const elixirEveryLevelMax = 20;
+
 class ElixirItem {
   final int elixirId;
   final String name;
@@ -57,6 +59,16 @@ class ElixirItem {
 
 class ElixirModel extends ChangeNotifier {
   Map<int, ElixirItem> items = {};
+  Map<int, int> countByLevel = {};
+
+  int availableForCreate(int level) {
+    final already = countByLevel[level] ?? 0;
+    int times = 0;
+    if (already < elixirEveryLevelMax) {
+      times = elixirEveryLevelMax - already;
+    }
+    return times;
+  }
 
   List<(int, String)> availableForSale() {
     List<(int, String)> list = [];
@@ -139,6 +151,13 @@ class ElixirModel extends ChangeNotifier {
       nftOwner,
       nftName,
     );
+
+    final count = countByLevel[level] ?? 0;
+    if (count == 0) {
+      countByLevel[level] = 1;
+    } else {
+      countByLevel[level] = count + 1;
+    }
   }
 
   /// Loading elixirs

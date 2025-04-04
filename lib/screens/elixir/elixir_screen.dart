@@ -19,6 +19,7 @@ class PlayElixirScreen extends StatefulWidget {
 
 class PlayElixirState extends State<PlayElixirScreen> {
   int myLevel = 0;
+  bool _canCreateNew = true;
   bool _loading = false;
   int? _selectedElixir;
 
@@ -37,9 +38,11 @@ class PlayElixirState extends State<PlayElixirScreen> {
       });
     }
     myLevel = context.watch<UserModel>().level;
+    final availableTimes = elixirs.availableForCreate(myLevel);
+    _canCreateNew = _selectedElixir != null || availableTimes > 0;
 
     return Scaffold(
-      appBar: AppBar(title: Text("炼丹 (${levels[myLevel]})")),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +56,7 @@ class PlayElixirState extends State<PlayElixirScreen> {
         ),
         rectangularMenuArea: FilledButton(
           onPressed:
-              selectedMaterialsIds.isEmpty || _loading
+              selectedMaterialsIds.isEmpty || _loading || !_canCreateNew
                   ? null
                   : () {
                     _selectedElixir != null
@@ -65,7 +68,7 @@ class PlayElixirState extends State<PlayElixirScreen> {
                           },
                         );
                   },
-          child: Text(_loading ? '炼丹中' : '炼丹'),
+          child: Text(_loading ? '炼丹中' : "炼丹 (剩 $availableTimes 次)"),
         ),
       ),
     );
@@ -87,12 +90,13 @@ class PlayElixirState extends State<PlayElixirScreen> {
               // selectedIngredients = List.from(recipes[newRecipe!] ?? []);
             });
           },
-          items: items.values.map((item) {
-              return DropdownMenuItem<int>(
-                value: item.elixirId,
-                child: Text(item.name),
-              );
-          }).toList(),
+          items:
+              items.values.map((item) {
+                return DropdownMenuItem<int>(
+                  value: item.elixirId,
+                  child: Text(item.name),
+                );
+              }).toList(),
         ),
       ),
     );

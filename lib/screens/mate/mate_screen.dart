@@ -20,7 +20,7 @@ class PlayMateState extends State<PlayMateScreen> {
     List<String> otherSkills = ["张三", "李四", "王二毛"];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('决斗')),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

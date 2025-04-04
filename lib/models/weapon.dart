@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'user.dart';
 import '../common/auth_http.dart';
 
+const int weaponEveryLevelMax = 20;
+
 class WeaponItem {
   final int weaponId;
   final String name;
@@ -60,6 +62,17 @@ class WeaponItem {
 class WeaponModel extends ChangeNotifier {
   Map<int, WeaponItem> items = {};
   Map<int, List<int>> poses = {};
+
+  Map<int, int> countByLevel = {};
+
+  int availableForCreate(int level) {
+    final already = countByLevel[level] ?? 0;
+    int times = 0;
+    if (already < weaponEveryLevelMax) {
+      times = weaponEveryLevelMax - already;
+    }
+    return times;
+  }
 
   List<(int, String)> availableForSale() {
     List<(int, String)> list = [];
@@ -162,6 +175,13 @@ class WeaponModel extends ChangeNotifier {
       } else {
         poses[pos]?.add(weaponId);
       }
+    }
+
+    final count = countByLevel[level] ?? 0;
+    if (count == 0) {
+      countByLevel[level] = 1;
+    } else {
+      countByLevel[level] = count + 1;
     }
   }
 

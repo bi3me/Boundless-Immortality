@@ -39,6 +39,7 @@ class LoginState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: palette.backgroundMain,
       body: ResponsiveScreen(
+        backable: false,
         mainAreaProminence: 0.45,
         squarishMainArea: Center(
           child: Transform.rotate(
@@ -162,7 +163,7 @@ class LoginState extends State<LoginScreen> {
 
     if (_formKey.currentState!.validate()) {
       if (await context.read<UserModel>().login(_email.text, _password.text)) {
-        if (context.mounted)  GoRouter.of(context).push('/play');
+        if (context.mounted)  GoRouter.of(context).go('/play');
       } else {
         if (context.mounted) GoRouter.of(context).push('/setup', extra: (_email.text, _password.text));
       }

@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'material.dart';
 import '../common/auth_http.dart';
 
+const int travelMax = 20;
+
 class TravelItem {
   final int id;
   final int ttype;
@@ -25,7 +27,7 @@ class TravelItem {
   );
 
   MyTravelItem toMy() {
-    return MyTravelItem(id, ttype, name, material == null, DateTime.now());
+    return MyTravelItem(id, ttype, name, material != null, DateTime.now());
   }
 }
 
@@ -48,10 +50,11 @@ class MyTravelItem {
 class TravelModel extends ChangeNotifier {
   int latest = 0;
   Map<int, MyTravelItem> history = {};
+  Map<int, (TravelItem, MaterialItem?)> historyItems = {};
   TravelItem? mine;
 
   bool avaiable() {
-    if (history.length >= 20) {
+    if (history.length >= travelMax) {
       DateTime now = DateTime.now();
       final first = history.keys.first;
       final firstTime = history[first]?.createdAt ?? now;
@@ -62,30 +65,30 @@ class TravelModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> create(String content) async {
-    final response = await AuthHttpClient().post(
-      AuthHttpClient.uri('users/travel'),
-      body: AuthHttpClient.form({'content': content}),
-    );
-
-    final data = AuthHttpClient.res(response);
-    if (data == null) {
-      return false;
-    } else {
-      fromNetwork(data);
-      notifyListeners();
-      return true;
+  Future<(TravelItem?, MaterialItem?)> show(int id) async {
+    if (historyItems.containsKey(id)) {
+      final (t, m) = historyItems[id] ?? (null, null);
+      return (t, m);
     }
+
+    if (history.containsKey(id)) {
+      return await doTravel(id);
+    }
+
+    return (null, null);
   }
 
   Future<(TravelItem?, MaterialItem?)> random() async {
     if (!avaiable()) {
       return (null, null);
     }
-    print(latest);
 
     Random random = Random();
     final id = random.nextInt(latest) + 1;
+    return await doTravel(id);
+  }
+
+  Future<(TravelItem?, MaterialItem?)> doTravel(int id) async {
     final response = await AuthHttpClient().get(
       AuthHttpClient.uri("users/travel/$id"),
     );
@@ -96,9 +99,11 @@ class TravelModel extends ChangeNotifier {
 
       // add to history
       final myTravel = newTravel.toMy();
-      if (history.length >= 20) {
-        final first = history.keys.first;
-        history.remove(first);
+      if (!history.containsKey(id)) {
+        if (history.length >= travelMax) {
+          final first = history.keys.first;
+          history.remove(first);
+        }
       }
       history[myTravel.travelId] = myTravel;
 
@@ -111,6 +116,7 @@ class TravelModel extends ChangeNotifier {
       }
       notifyListeners();
 
+      historyItems[newTravel.id] = (newTravel, mitem);
       return (newTravel, mitem);
     } else {
       return (null, null);
@@ -128,6 +134,22 @@ class TravelModel extends ChangeNotifier {
       return true;
     } else {
       return false;
+    }
+  }
+
+  Future<bool> create(String content) async {
+    final response = await AuthHttpClient().post(
+      AuthHttpClient.uri('users/travel'),
+      body: AuthHttpClient.form({'content': content}),
+    );
+
+    final data = AuthHttpClient.res(response);
+    if (data == null) {
+      return false;
+    } else {
+      mine = itemFromNetwork(data);
+      notifyListeners();
+      return true;
     }
   }
 
@@ -151,7 +173,7 @@ class TravelModel extends ChangeNotifier {
     final createdAt = DateTime.parse(item['created_at']);
     final t = MyTravelItem(travelId, ttype, name, material, createdAt);
 
-    if (history.length >= 20) {
+    if (history.length >= travelMax) {
       final first = history.keys.first;
       history.remove(first);
     }
@@ -174,6 +196,7 @@ class TravelModel extends ChangeNotifier {
         }
         notifyListeners();
       }
+      mine = itemFromNetwork(data['mine']);
     }
   }
 }

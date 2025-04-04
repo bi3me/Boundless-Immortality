@@ -9,13 +9,15 @@ import 'package:go_router/go_router.dart';
 /// main area, a smaller menu area, and a small area for a message on top.
 /// It works in both orientations on mobile- and tablet-sized screens.
 class ResponsiveScreen extends StatelessWidget {
+  final bool backable;
+
   /// This is the "hero" of the screen. It's more or less square, and will
   /// be placed in the visual "center" of the screen.
   final Widget squarishMainArea;
 
   /// The second-largest area after [squarishMainArea]. It can be narrow
   /// or wide.
-  final Widget rectangularMenuArea;
+  final Widget? rectangularMenuArea;
 
   /// How much bigger should the [squarishMainArea] be compared to the other
   /// elements.
@@ -23,8 +25,9 @@ class ResponsiveScreen extends StatelessWidget {
 
   const ResponsiveScreen({
     required this.squarishMainArea,
-    required this.rectangularMenuArea,
+    this.rectangularMenuArea,
     this.mainAreaProminence = 0.8,
+    this.backable = true,
     super.key,
   });
 
@@ -41,7 +44,7 @@ class ResponsiveScreen extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SafeArea(bottom: false, child: SizedBox.shrink()),
+              SafeArea(bottom: false, child: SizedBox.shrink()),
               Expanded(
                 flex: (mainAreaProminence * 100).round(),
                 child: SafeArea(
@@ -54,7 +57,32 @@ class ResponsiveScreen extends StatelessWidget {
               SafeArea(
                 top: false,
                 maintainBottomViewPadding: true,
-                child: Padding(padding: padding, child: rectangularMenuArea),
+                child: Padding(padding: padding,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      if (backable)
+                      Container(
+                        margin: const EdgeInsets.only(right: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () => GoRouter.of(context).pop(),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.home),
+                              Icon(Icons.chevron_left),
+                            ]
+                          ),
+                        ),
+                      ),
+                      if (rectangularMenuArea != null)
+                      Expanded(child: rectangularMenuArea ?? SizedBox.shrink())
+                    ],
+                  )
+                ),
               ),
             ],
           );

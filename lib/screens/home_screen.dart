@@ -25,6 +25,7 @@ class PlayState extends State<PlayScreen> {
     return Scaffold(
       backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
+        backable: false,
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -46,7 +47,7 @@ class PlayState extends State<PlayScreen> {
         ),
         rectangularMenuArea: FilledButton(
           onPressed: () {
-            GoRouter.of(context).go('/play/travel');
+            GoRouter.of(context).push('/play/travel');
           },
           child: const Text('游历'),
         ),
@@ -63,7 +64,14 @@ class PlayState extends State<PlayScreen> {
           // backgroundImage: AssetImage("assets/logo.png"), // 头像
         ),
         SizedBox(width: 20),
-        Text(user.name, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(
+          user.name,
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
+        Spacer(),
+        IconButton(onPressed: () {
+            GoRouter.of(context).push('/settings');
+        }, icon: Icon(Icons.tune))
       ],
     );
   }
@@ -143,11 +151,8 @@ class PlayState extends State<PlayScreen> {
       itemBuilder: (context, index) {
         var (name, route) = actions[index];
         return ElevatedButton(
-          style: ButtonStyle(
-            // backgroundColor: WidgetStatePropertyAll<Color>(Color(0xffbfc8e3)),
-          ),
           onPressed: () {
-            GoRouter.of(context).go('/play/$route');
+            GoRouter.of(context).push('/play/$route');
           },
           child: Text(name),
         );
@@ -172,11 +177,8 @@ class PlayState extends State<PlayScreen> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: ListView(
-            children: [
-              Text("[世界] 仙尊·无名: 今日突破化神境！"),
-              Text("[好友] 李白: 兄弟，坊市有新功法！"),
-              Text("[世界] 魔道·血影: 谁敢与我一战？"),
-            ],
+            children:
+            broadcasts.map((b) => Text(b.show())).toList(),
           ),
         ),
       ],

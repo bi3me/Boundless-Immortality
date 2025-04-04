@@ -19,6 +19,7 @@ class PlayForgingScreen extends StatefulWidget {
 
 class PlayForgingState extends State<PlayForgingScreen> {
   int myLevel = 0;
+  bool _canCreateNew = true;
   bool _loading = false;
   int? _selectedForging;
 
@@ -37,9 +38,11 @@ class PlayForgingState extends State<PlayForgingScreen> {
       });
     }
     myLevel = context.watch<UserModel>().level;
+    final availableTimes = forgings.availableForCreate(myLevel);
+    _canCreateNew = _selectedForging != null || availableTimes > 0;
 
     return Scaffold(
-      appBar: AppBar(title: Text("炼器 (${levels[myLevel]})")),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +56,7 @@ class PlayForgingState extends State<PlayForgingScreen> {
         ),
         rectangularMenuArea: FilledButton(
           onPressed:
-              selectedMaterialsIds.isEmpty || _loading
+              selectedMaterialsIds.isEmpty || _loading || !_canCreateNew
                   ? null
                   : () {
                     _selectedForging != null
@@ -65,7 +68,7 @@ class PlayForgingState extends State<PlayForgingScreen> {
                           },
                         );
                   },
-          child: Text(_loading ? '炼制中' : '炼器'),
+          child: Text(_loading ? '炼制中' : "炼器 (剩 $availableTimes 次)"),
         ),
       ),
     );

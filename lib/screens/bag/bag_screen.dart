@@ -31,12 +31,11 @@ class PlayBagState extends State<PlayBagScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('储物袋')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: SizedBox(
+      backgroundColor: palette.backgroundLevelSelection,
+      body: ResponsiveScreen(
+        squarishMainArea: Column(
+          children: [
+            SizedBox(
               width: double.infinity,
               child: SegmentedButton<int>(
                 segments: const [
@@ -59,14 +58,12 @@ class PlayBagState extends State<PlayBagScreen> {
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
+            const SizedBox(height: 8),
+            Expanded(
               child: all[_selectedIndex],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

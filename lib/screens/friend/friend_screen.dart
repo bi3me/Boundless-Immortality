@@ -49,7 +49,7 @@ class PlayFriendState extends State<PlayFriendScreen> {
     final palette = context.watch<Palette>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('仙友')),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

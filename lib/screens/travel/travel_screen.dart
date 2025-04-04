@@ -25,7 +25,7 @@ class PlayTravelState extends State<PlayTravelScreen> {
     final history = travel.history.values.toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('游历')),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,32 +56,83 @@ class PlayTravelState extends State<PlayTravelScreen> {
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                itemCount: history.length,
-                itemBuilder: (context, index) {
-                  final name = history[index].name;
-                  final realname = history[index].ttype == 1 ? "$name 的洞府" : name;
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 4),
-                    color:
-                        history[index].material
-                            ? Colors.green[200]
-                            : Colors.grey[200],
-                    child: ListTile(
-                      title: Text(realname),
-                      trailing: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                        ),
-                        onPressed: () {
-                          //
+              child:
+                  _selectedIndex == 1
+                      ? Column(
+                        children: [
+                          GestureDetector(
+                            onTap:
+                                () => showDialog(
+                                  context: context,
+                                  builder: (BuildContext dialogContext) {
+                                    return CreateMineDialog(
+                                      travel.mine?.content ?? '',
+                                    );
+                                  },
+                                ),
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 4.0),
+                              width: double.infinity,
+                              height: 80,
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                travel.mine?.content ?? '无',
+                                style: const TextStyle(fontSize: 16),
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          )
+                        ]
+                      )
+                      : ListView.builder(
+                        itemCount: history.length,
+                        itemBuilder: (context, index) {
+                          final name = history[index].name;
+                          final realname =
+                              history[index].ttype == 1 ? "$name 的洞府" : name;
+                          return Card(
+                            margin: EdgeInsets.symmetric(vertical: 4),
+                            child: ListTile(
+                              title: Text(realname),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                    child: Text(history[index].material ? '有发现' : ''),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      final (t, m) = await travel.show(
+                                        history[index].travelId,
+                                      );
+                                      if (t == null) return;
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext dialogContext) {
+                                          return CreateTravelDialog(t, m);
+                                        },
+                                      );
+                                    },
+                                    child: Text('闯入'),
+                                  ),
+                                ]
+                              ),
+                            ),
+                          );
                         },
-                        child: Text('闯入'),
                       ),
-                    ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -110,6 +161,87 @@ class PlayTravelState extends State<PlayTravelScreen> {
         },
       );
     }
+  }
+}
+
+class CreateMineDialog extends StatefulWidget {
+  final String old;
+  const CreateMineDialog(this.old, {super.key});
+
+  @override
+  CreateMineDialogState createState() => CreateMineDialogState();
+}
+
+class CreateMineDialogState extends State<CreateMineDialog> {
+  final TextEditingController _mineController = TextEditingController();
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    _mineController.text = widget.old;
+    super.initState();
+  }
+
+  void _submitData(BuildContext context) async {
+    setState(() {
+      _loading = true;
+    });
+
+    final content = _mineController.text;
+
+    if (content.length > 100) {
+      setState(() {
+        _error = '最多 100 个字';
+      });
+    }
+
+    final res = await context.read<TravelModel>().create(content);
+
+    _loading = false;
+    if (res) {
+      if (context.mounted) Navigator.of(context).pop();
+    } else {
+      setState(() {
+        _error = '更新失败，稍后再试';
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('我的洞府'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            maxLines: 3,
+            minLines: 3,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: '输入新文字 (100 字以内)',
+            ),
+            controller: _mineController,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: Text(_error ?? '')
+          ),
+        ]
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('取消'),
+        ),
+        ElevatedButton(
+          onPressed: _loading ? null : () => _submitData(context),
+          child: Text(_loading ? '进行中' : '更新'),
+        ),
+      ],
+    );
   }
 }
 
@@ -168,8 +300,10 @@ class CreateTravelDialogState extends State<CreateTravelDialog> {
               ),
             ),
             Text("发现了: $mname"),
-            const SizedBox(height: 10),
-            Text(_info),
+            const SizedBox(height: 4.0),
+            Text("对方战力: ${widget.item.power}"),
+            const SizedBox(height: 10.0),
+            Text(_info, style: TextStyle(color: Colors.blue)),
           ],
         ),
       ),

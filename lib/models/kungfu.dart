@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../common/auth_http.dart';
 import '../models/user.dart';
 
+const int kungfuEveryLevelMax = 2;
+
 class KungfuItem {
   final int kungfuId;
   final String name;
@@ -43,6 +45,7 @@ class KungfuItem {
 class KungfuModel extends ChangeNotifier {
   Map<int, KungfuItem> items = {};
   int nowWorking = 0;
+  Map<int, int> countByLevel = {};
 
   KungfuItem? get working => items[nowWorking];
 
@@ -69,13 +72,20 @@ class KungfuModel extends ChangeNotifier {
     }
   }
 
+  int availableForCreate(int level) {
+    final already = countByLevel[level] ?? 0;
+    int times = 0;
+    if (already < kungfuEveryLevelMax) {
+      times = kungfuEveryLevelMax - already;
+    }
+    return times;
+  }
+
   List<(int, String)> availableForSale() {
     List<(int, String)> list = [];
     items.forEach((_, v) {
-      if (
-        v.nftOwner != null &&
-        ((v.number > 1 && v.working) || (v.number > 0 && !v.working))
-      ) {
+      if (v.nftOwner != null &&
+          ((v.number > 1 && v.working) || (v.number > 0 && !v.working))) {
         list.add((v.kungfuId, v.nftName ?? v.name));
       }
     });
@@ -160,6 +170,13 @@ class KungfuModel extends ChangeNotifier {
       nftName,
       nftAttribute,
     );
+
+    final count = countByLevel[level] ?? 0;
+    if (count == 0) {
+      countByLevel[level] = 1;
+    } else {
+      countByLevel[level] = count + 1;
+    }
   }
 
   /// Loading kungfus

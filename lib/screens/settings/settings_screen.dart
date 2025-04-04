@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import '../../common/in_app_purchase/in_app_purchase.dart';
 import '../style/palette.dart';
 import '../style/responsive_screen.dart';
-import 'custom_name_dialog.dart';
 import 'settings.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -25,25 +24,21 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: palette.backgroundSettings,
       body: ResponsiveScreen(
-        squarishMainArea: ListView(
+        backable: false,
+        squarishMainArea: Column(
           children: [
             _gap,
             const Text(
-              'Settings',
+              '设置',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Permanent Marker',
-                fontSize: 55,
-                height: 1,
-              ),
+              style: TextStyle(fontSize: 55, height: 1),
             ),
             _gap,
-            const _NameChangeLine('Name'),
             ValueListenableBuilder<bool>(
               valueListenable: settings.soundsOn,
               builder:
                   (context, soundsOn, child) => _SettingsLine(
-                    'Sound FX',
+                    '按键声音',
                     Icon(soundsOn ? Icons.graphic_eq : Icons.volume_off),
                     onSelected: () => settings.toggleSoundsOn(),
                   ),
@@ -52,7 +47,7 @@ class SettingsScreen extends StatelessWidget {
               valueListenable: settings.musicOn,
               builder:
                   (context, musicOn, child) => _SettingsLine(
-                    'Music',
+                    '背景音乐',
                     Icon(musicOn ? Icons.music_note : Icons.music_off),
                     onSelected: () => settings.toggleMusicOn(),
                   ),
@@ -82,6 +77,12 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
             _gap,
+            Spacer(),
+            ListTile(
+              title: Center(child: Text('退出当前账号', style: TextStyle(color: Colors.red[500]))),
+              onTap: () {
+                GoRouter.of(context).go('/');
+            })
           ],
         ),
         rectangularMenuArea: FilledButton(
@@ -89,49 +90,6 @@ class SettingsScreen extends StatelessWidget {
             GoRouter.of(context).pop();
           },
           child: const Text('Back'),
-        ),
-      ),
-    );
-  }
-}
-
-class _NameChangeLine extends StatelessWidget {
-  final String title;
-
-  const _NameChangeLine(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    final settings = context.watch<SettingsController>();
-
-    return InkResponse(
-      highlightShape: BoxShape.rectangle,
-      onTap: () => showCustomNameDialog(context),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontFamily: 'Permanent Marker',
-                fontSize: 30,
-              ),
-            ),
-            const Spacer(),
-            ValueListenableBuilder(
-              valueListenable: settings.playerName,
-              builder:
-                  (context, name, child) => Text(
-                    '‘$name’',
-                    style: const TextStyle(
-                      fontFamily: 'Permanent Marker',
-                      fontSize: 30,
-                    ),
-                  ),
-            ),
-          ],
         ),
       ),
     );

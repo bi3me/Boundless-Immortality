@@ -42,7 +42,7 @@ class PlayDuelState extends State<PlayDuelScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('决斗')),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +113,10 @@ class PlayDuelState extends State<PlayDuelScreen> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("${items[index].coin} 灵石"),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text("${items[index].coin} 灵石"),
+                ),
                 SizedBox(width: 8),
                 if (!isMy)
                   ElevatedButton(

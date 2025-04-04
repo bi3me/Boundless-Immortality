@@ -33,7 +33,7 @@ class PlayMarketState extends State<PlayMarketScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('坊市')),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,8 +93,10 @@ class PlayMarketState extends State<PlayMarketScreen> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text("${items[index].coin} 灵石"),
-                SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text("${items[index].coin} 灵石"),
+                ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 8),

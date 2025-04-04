@@ -20,9 +20,10 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
     final palette = context.watch<Palette>();
     final kungfu = context.watch<KungfuModel>();
     final user = context.watch<UserModel>();
+    final availableTimes = kungfu.availableForCreate(user.level);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('功法')),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,8 +47,8 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
           ],
         ),
         rectangularMenuArea: FilledButton(
-          onPressed: () => _showCreateDialog(context, user.level, user.attribute),
-          child: const Text('创建功法'),
+          onPressed: availableTimes == 0 ? null : () => _showCreateDialog(context, user.level, user.attribute),
+          child: Text("创建功法 (剩 $availableTimes 次)"),
         ),
       ),
     );
@@ -105,7 +106,12 @@ class CreateCharacterDialog extends StatefulWidget {
   final int level;
   final int attribute;
 
-  const CreateCharacterDialog(this.level, this.total, this.attribute, {super.key});
+  const CreateCharacterDialog(
+    this.level,
+    this.total,
+    this.attribute, {
+    super.key,
+  });
 
   @override
   CreateCharacterDialogState createState() => CreateCharacterDialogState();
@@ -188,7 +194,9 @@ class CreateCharacterDialogState extends State<CreateCharacterDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("${attributes[widget.attribute]} 属性，战力增强总和 ${widget.total}%"),
+              Text(
+                "${attributes[widget.attribute]} 属性，战力增强总和 ${widget.total}%",
+              ),
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(labelText: '名称'),

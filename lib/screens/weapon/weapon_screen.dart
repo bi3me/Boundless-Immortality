@@ -23,7 +23,7 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
     final weapon = context.watch<WeaponModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('法宝')),
+      backgroundColor: palette.backgroundLevelSelection,
       body: ResponsiveScreen(
         squarishMainArea: SingleChildScrollView(
           child: Column(
