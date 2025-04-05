@@ -27,7 +27,8 @@ class PlayBagState extends State<PlayBagScreen> {
       _showElixirItem(context, elixirs.items.values.toList()),
     ];
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           children: [
@@ -48,9 +49,7 @@ class PlayBagState extends State<PlayBagScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Expanded(
-              child: all[_selectedIndex],
-            ),
+            Expanded(child: all[_selectedIndex]),
           ],
         ),
       ),
@@ -59,8 +58,8 @@ class PlayBagState extends State<PlayBagScreen> {
 
   Widget _showMaterialItem(BuildContext context, List<MaterialItem> items) {
     return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 100,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
         childAspectRatio: 1,

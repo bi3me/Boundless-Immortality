@@ -22,7 +22,8 @@ class PlayTravelState extends State<PlayTravelScreen> {
     final travel = context.watch<TravelModel>();
     final history = travel.history.values.toList();
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

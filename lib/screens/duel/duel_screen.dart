@@ -39,7 +39,8 @@ class PlayDuelState extends State<PlayDuelScreen> {
       _showHistoryDuel(duel.history.values.toList(), user.attribute),
     ];
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

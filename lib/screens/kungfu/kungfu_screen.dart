@@ -20,7 +20,8 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
     final user = context.watch<UserModel>();
     final availableTimes = kungfu.availableForCreate(user.level);
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

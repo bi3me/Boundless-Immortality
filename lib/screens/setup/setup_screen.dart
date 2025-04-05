@@ -26,7 +26,8 @@ class SetupState extends State<SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           children: [

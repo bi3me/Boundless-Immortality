@@ -16,7 +16,8 @@ class PlayMateState extends State<PlayMateScreen> {
   Widget build(BuildContext context) {
     List<String> otherSkills = ["张三", "李四", "王二毛"];
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

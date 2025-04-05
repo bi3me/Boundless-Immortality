@@ -7,6 +7,37 @@ import '../models/user.dart';
 import '../models/broadcast.dart';
 import '../common/constants.dart';
 
+class HomeScreen extends StatelessWidget {
+  bool _isDesktop = false;
+
+  HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth > 760) {
+      _isDesktop = true;
+    } else {
+      _isDesktop = false;
+    }
+
+    final user = context.watch<UserModel>();
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body:
+          _isDesktop
+              ? Row(
+                children: [
+                  SizedBox(width: 400, child: PlayScreen()),
+                  Expanded(child: user.detailPage),
+                ],
+              )
+              : PlayScreen(),
+    );
+  }
+}
+
 class PlayScreen extends StatefulWidget {
   const PlayScreen({super.key});
 
@@ -20,31 +51,35 @@ class PlayState extends State<PlayScreen> {
     final user = context.watch<UserModel>();
     final broadcasts = context.watch<BroadcastModel>().items;
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         backable: false,
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildProfileHeader(user),
-            const SizedBox(height: 10),
-            _buildExperienceBar(user.level, user.levelNum),
-            const SizedBox(height: 10),
-            _buildStatsRow(user),
-            const SizedBox(height: 20),
-            _buildActionButtons(),
-            const SizedBox(height: 20),
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [_buildMessages(broadcasts)],
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildProfileHeader(user),
+                    const SizedBox(height: 10),
+                    _buildExperienceBar(user.level, user.levelNum),
+                    const SizedBox(height: 10),
+                    _buildStatsRow(user),
+                    const SizedBox(height: 20),
+                    _buildActionButtons(user),
+                    const SizedBox(height: 10),
+                  ],
+                ),
               ),
             ),
+            SafeArea(child: _buildMessages(broadcasts)),
           ],
         ),
         rectangularMenuArea: FilledButton(
           onPressed: () {
-            GoRouter.of(context).push('/play/travel');
+            user.router(context, '/play/travel');
           },
           child: const Text('游历'),
         ),
@@ -66,9 +101,13 @@ class PlayState extends State<PlayScreen> {
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
         Spacer(),
-        IconButton(onPressed: () {
+        IconButton(
+          onPressed: () {
             GoRouter.of(context).push('/settings');
-        }, icon: Icon(Icons.tune), color: attributeColors[user.attribute])
+          },
+          icon: Icon(Icons.tune),
+          color: attributeColors[user.attribute],
+        ),
       ],
     );
   }
@@ -123,7 +162,7 @@ class PlayState extends State<PlayScreen> {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(UserModel user) {
     List<(String, String)> actions = [
       ('功法', 'kungfu'),
       ('法宝', 'weapon'),
@@ -149,7 +188,7 @@ class PlayState extends State<PlayScreen> {
         var (name, route) = actions[index];
         return ElevatedButton(
           onPressed: () {
-            GoRouter.of(context).push('/play/$route');
+            user.router(context, '/play/$route');
           },
           child: Text(name),
         );
@@ -174,8 +213,7 @@ class PlayState extends State<PlayScreen> {
             borderRadius: BorderRadius.circular(4),
           ),
           child: ListView(
-            children:
-            broadcasts.map((b) => Text(b.show())).toList(),
+            children: broadcasts.map((b) => Text(b.show())).toList(),
           ),
         ),
       ],

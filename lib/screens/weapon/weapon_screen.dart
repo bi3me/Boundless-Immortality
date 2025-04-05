@@ -20,7 +20,8 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
     final user = context.read<UserModel>();
     final weapon = context.watch<WeaponModel>();
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: SingleChildScrollView(
           child: Column(

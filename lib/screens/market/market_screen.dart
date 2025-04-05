@@ -30,7 +30,8 @@ class PlayMarketState extends State<PlayMarketScreen> {
       _showItems(market.weapons.values.toList(), market),
     ];
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

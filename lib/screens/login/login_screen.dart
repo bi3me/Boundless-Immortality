@@ -34,7 +34,11 @@ class LoginState extends State<LoginScreen> {
     final settingsController = context.watch<SettingsController>();
     final audioController = context.watch<AudioController>();
 
-    return CustomScaffold(
+    _email.text = 'qq@bi3.me';
+    _password.text = 'qqq123';
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         backable: false,
         mainAreaProminence: 0.45,
@@ -123,7 +127,10 @@ class LoginState extends State<LoginScreen> {
             ),
             _gap,
             _gap,
-            FilledButton(onPressed: () => _submit(context), child: Text(_isLoading ? '准备中' : '踏上仙途')),
+            FilledButton(
+              onPressed: () => _submit(context),
+              child: Text(_isLoading ? '准备中' : '踏上仙途'),
+            ),
             _gap,
             TextButton(
               onPressed: () => GoRouter.of(context).push('/settings'),
@@ -160,9 +167,12 @@ class LoginState extends State<LoginScreen> {
 
     if (_formKey.currentState!.validate()) {
       if (await context.read<UserModel>().login(_email.text, _password.text)) {
-        if (context.mounted)  GoRouter.of(context).go('/play');
+        if (context.mounted) GoRouter.of(context).go('/play');
       } else {
-        if (context.mounted) GoRouter.of(context).push('/setup', extra: (_email.text, _password.text));
+        if (context.mounted)
+          GoRouter.of(
+            context,
+          ).push('/setup', extra: (_email.text, _password.text));
       }
     }
 

@@ -39,7 +39,8 @@ class PlayElixirState extends State<PlayElixirScreen> {
     final availableTimes = elixirs.availableForCreate(myLevel);
     _canCreateNew = _selectedElixir != null || availableTimes > 0;
 
-    return CustomScaffold(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,8 +105,8 @@ class PlayElixirState extends State<PlayElixirScreen> {
       padding: const EdgeInsets.all(8.0),
       child: GridView.builder(
         shrinkWrap: true,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4,
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 100,
           crossAxisSpacing: 8,
           mainAxisSpacing: 8,
           childAspectRatio: 1,
@@ -142,8 +143,8 @@ class PlayElixirState extends State<PlayElixirScreen> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
+          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+            maxCrossAxisExtent: 100,
             crossAxisSpacing: 8,
             mainAxisSpacing: 8,
             childAspectRatio: 1,

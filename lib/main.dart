@@ -118,106 +118,83 @@ Future<void> main() async {
 Logger _log = Logger('main.dart');
 
 class MyApp extends StatelessWidget {
-  static final _router = GoRouter(
-    routes: [
+  static get routers => [
       GoRoute(
         path: '/',
-        builder: (context, state) => const LoginScreen(key: Key('login')),
-        routes: [
-          GoRoute(
-            path: 'play',
-            builder: (context, state) => const PlayScreen(key: Key('play')),
-            routes: [
-              GoRoute(
-                path: 'kungfu',
-                builder: (context, state) {
-                  context.read<KungfuModel>().load();
-                  return const PlayKungfuScreen(key: Key('play_kungfu'));
-                },
-              ),
-              GoRoute(
-                path: 'weapon',
-                builder: (context, state) {
-                  context.read<WeaponModel>().load();
-                  return const PlayWeaponScreen(key: Key('play_weapon'));
-                },
-              ),
-              GoRoute(
-                path: 'bag',
-                builder: (context, state) {
-                  context.read<MaterialModel>().load();
-                  return const PlayBagScreen(key: Key('play_bag'));
-                },
-              ),
-              GoRoute(
-                path: 'elixir',
-                builder: (context, state) {
-                  context.read<ElixirModel>().load();
-                  return const PlayElixirScreen(key: Key('play_elixir'));
-                },
-              ),
-              GoRoute(
-                path: 'forging',
-                builder: (context, state) {
-                  context.read<WeaponModel>().load();
-                  return const PlayForgingScreen(key: Key('play_forging'));
-                },
-              ),
-              GoRoute(
-                path: 'duel',
-                builder: (context, state) {
-                  context.read<DuelModel>().load();
-                  return const PlayDuelScreen(key: Key('play_duel'));
-                },
-              ),
-              GoRoute(
-                path: 'friend',
-                builder:
-                    (context, state) =>
-                        const PlayFriendScreen(key: Key('play_friend')),
-              ),
-              GoRoute(
-                path: 'mate',
-                builder:
-                    (context, state) =>
-                        const PlayMateScreen(key: Key('play_mate')),
-              ),
-              GoRoute(
-                path: 'market',
-                builder: (context, state) {
-                  context.read<MarketModel>().load();
-                  return const PlayMarketScreen(key: Key('play_market'));
-                },
-              ),
-              GoRoute(
-                path: 'travel',
-                builder: (context, state) {
-                  context.read<TravelModel>().load();
-                  return const PlayTravelScreen(key: Key('play_travel'));
-                },
-              ),
-            ],
-          ),
-          GoRoute(
-            path: 'settings',
-            builder:
-                (context, state) => const SettingsScreen(key: Key('settings')),
-          ),
-          GoRoute(
-            path: 'setup',
-            builder: (context, state) {
-              final (email, password) = state.extra as (String, String);
-              return SetupScreen(
-                email: email,
-                password: password,
-                key: Key('setup'),
-              );
-            },
-          ),
-        ],
+        builder: (context, state) => const LoginScreen(key: Key('login'))),
+      GoRoute(
+        path: '/setup',
+        builder: (context, state) {
+          final (email, password) = state.extra as (String, String);
+          return SetupScreen(email: email, password: password, key: Key('setup'));
+      }),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(key: Key('settings')),
       ),
-    ],
-  );
+      GoRoute(
+        path: '/play',
+        builder: (context, state) => HomeScreen(key: Key('play'))),
+      GoRoute(
+        path: '/play/kungfu',
+        builder: (context, state) {
+          context.read<KungfuModel>().load();
+          return const PlayKungfuScreen(key: Key('play_kungfu'));
+      }),
+      GoRoute(
+        path: '/play/weapon',
+        builder: (context, state) {
+          context.read<WeaponModel>().load();
+          return const PlayWeaponScreen(key: Key('play_weapon'));
+      }),
+      GoRoute(
+        path: '/play/bag',
+        builder: (context, state) {
+          context.read<MaterialModel>().load();
+          return const PlayBagScreen(key: Key('play_bag'));
+      }),
+      GoRoute(
+        path: '/play/elixir',
+        builder: (context, state) {
+          context.read<ElixirModel>().load();
+          return const PlayElixirScreen(key: Key('play_elixir'));
+      }),
+      GoRoute(
+        path: '/play/forging',
+        builder: (context, state) {
+          context.read<WeaponModel>().load();
+          return const PlayForgingScreen(key: Key('play_forging'));
+      }),
+      GoRoute(
+        path: '/play/duel',
+        builder: (context, state) {
+          context.read<DuelModel>().load();
+          return const PlayDuelScreen(key: Key('play_duel'));
+      }),
+      GoRoute(
+        path: '/play/market',
+        builder: (context, state) {
+          context.read<MarketModel>().load();
+          return const PlayMarketScreen(key: Key('play_market'));
+      }),
+      GoRoute(
+        path: '/play/travel',
+        builder: (context, state) {
+          context.read<TravelModel>().load();
+          return const PlayTravelScreen(key: Key('play_travel'));
+      }),
+      GoRoute(
+        path: '/play/friend',
+        builder:
+        (context, state) => const PlayFriendScreen(key: Key('play_friend')),
+      ),
+      GoRoute(
+        path: '/play/mate',
+        builder: (context, state) => const PlayMateScreen(key: Key('play_mate')),
+      ),
+    ];
+
+  static get router => GoRouter(routes: routers);
 
   final SettingsPersistence settingsPersistence;
 
@@ -234,6 +211,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final myRouter = router;
     return AppLifecycleObserver(
       child: MultiProvider(
         providers: [
@@ -282,6 +260,20 @@ class MyApp extends StatelessWidget {
 
             return MaterialApp.router(
               title: 'Boundless Immortality',
+              builder:
+                  (context, child) => Stack(
+                    children: [
+                      Container(
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/background.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      child ?? const SizedBox.shrink(),
+                    ],
+                  ),
               theme: ThemeData(
                 textTheme: TextTheme(
                   bodyMedium: TextStyle(color: Colors.white),
@@ -320,8 +312,12 @@ class MyApp extends StatelessWidget {
                 ),
                 filledButtonTheme: FilledButtonThemeData(
                   style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(attributeColors[attribute]),
-                    foregroundColor: WidgetStateProperty.all(attributeFontColors[attribute]),
+                    backgroundColor: WidgetStateProperty.all(
+                      attributeColors[attribute],
+                    ),
+                    foregroundColor: WidgetStateProperty.all(
+                      attributeFontColors[attribute],
+                    ),
                     shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4.0),
@@ -330,9 +326,9 @@ class MyApp extends StatelessWidget {
                   ),
                 ),
               ),
-              routeInformationProvider: _router.routeInformationProvider,
-              routeInformationParser: _router.routeInformationParser,
-              routerDelegate: _router.routerDelegate,
+              routeInformationProvider: myRouter.routeInformationProvider,
+              routeInformationParser: myRouter.routeInformationParser,
+              routerDelegate: myRouter.routerDelegate,
               scaffoldMessengerKey: scaffoldMessengerKey,
             );
           },

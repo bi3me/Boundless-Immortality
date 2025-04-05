@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
 
 import '../common/auth_http.dart';
 import '../common/token.dart';
+import '../main.dart';
 
 class UserModel extends ChangeNotifier {
   int id = 0;
@@ -23,6 +26,23 @@ class UserModel extends ChangeNotifier {
   int mate = 0;
   DateTime nextMate = DateTime.now();
   String? avatar;
+
+  Widget detailPage = SizedBox.shrink();
+
+  void router(BuildContext context, String path) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    if (screenWidth > 760) {
+      for (var route in MyApp.routers) {
+        if (route.path == path) {
+          final widget = route.builder(context, GoRouterState.of(context));
+          detailPage = widget ?? SizedBox.shrink();
+          notifyListeners();
+        }
+      }
+    } else {
+      GoRouter.of(context).push(path);
+    }
+  }
 
   /// Update user data from network (fully info)
   void fromNetwork(Map<String, dynamic> json) {
