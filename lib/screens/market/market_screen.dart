@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../common/constants.dart';
 import '../../models/market.dart';
@@ -23,7 +22,6 @@ class PlayMarketState extends State<PlayMarketScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final market = context.watch<MarketModel>();
     final all = [
       _showItems(market.materials.values.toList(), market),
@@ -32,8 +30,7 @@ class PlayMarketState extends State<PlayMarketScreen> {
       _showItems(market.weapons.values.toList(), market),
     ];
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,13 +50,6 @@ class PlayMarketState extends State<PlayMarketScreen> {
                     _selectedIndex = newSelection.first;
                   });
                 },
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                ),
               ),
             ),
             const SizedBox(height: 4.0),

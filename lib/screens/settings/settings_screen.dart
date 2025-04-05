@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../common/in_app_purchase/in_app_purchase.dart';
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import 'settings.dart';
 
@@ -19,10 +18,8 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsController>();
-    final palette = context.watch<Palette>();
 
-    return Scaffold(
-      backgroundColor: palette.backgroundSettings,
+    return CustomScaffold(
       body: ResponsiveScreen(
         backable: false,
         squarishMainArea: Column(

@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../common/audio/audio_controller.dart';
 import '../../common/audio/sounds.dart';
 import '../settings/settings.dart';
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../models/user.dart';
 
@@ -32,12 +31,10 @@ class LoginState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final settingsController = context.watch<SettingsController>();
     final audioController = context.watch<AudioController>();
 
-    return Scaffold(
-      backgroundColor: palette.backgroundMain,
+    return CustomScaffold(
       body: ResponsiveScreen(
         backable: false,
         mainAreaProminence: 0.45,

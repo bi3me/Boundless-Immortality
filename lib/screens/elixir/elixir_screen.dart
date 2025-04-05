@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../models/elixir.dart';
 import '../../models/material.dart';
@@ -29,7 +28,6 @@ class PlayElixirState extends State<PlayElixirScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final materials = context.watch<MaterialModel>().elixirsItems;
     final elixirs = context.watch<ElixirModel>();
     if (tmpMaterialsNum.isEmpty && materials.isNotEmpty) {
@@ -41,8 +39,7 @@ class PlayElixirState extends State<PlayElixirScreen> {
     final availableTimes = elixirs.availableForCreate(myLevel);
     _canCreateNew = _selectedElixir != null || availableTimes > 0;
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

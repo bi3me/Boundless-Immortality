@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../models/weapon.dart';
 import '../../models/material.dart';
@@ -29,7 +28,6 @@ class PlayForgingState extends State<PlayForgingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final materials = context.watch<MaterialModel>().weaponItems;
     final forgings = context.watch<WeaponModel>();
     if (tmpMaterialsNum.isEmpty && materials.isNotEmpty) {
@@ -41,8 +39,7 @@ class PlayForgingState extends State<PlayForgingScreen> {
     final availableTimes = forgings.availableForCreate(myLevel);
     _canCreateNew = _selectedForging != null || availableTimes > 0;
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

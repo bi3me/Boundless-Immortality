@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import 'style/palette.dart';
 import 'style/responsive_screen.dart';
 import '../models/user.dart';
 import '../models/broadcast.dart';
@@ -18,12 +17,10 @@ class PlayScreen extends StatefulWidget {
 class PlayState extends State<PlayScreen> {
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final user = context.watch<UserModel>();
     final broadcasts = context.watch<BroadcastModel>().items;
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         backable: false,
         squarishMainArea: Column(
@@ -71,7 +68,7 @@ class PlayState extends State<PlayScreen> {
         Spacer(),
         IconButton(onPressed: () {
             GoRouter.of(context).push('/settings');
-        }, icon: Icon(Icons.tune))
+        }, icon: Icon(Icons.tune), color: attributeColors[user.attribute])
       ],
     );
   }
@@ -173,8 +170,8 @@ class PlayState extends State<PlayScreen> {
           height: 100,
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(10),
+            color: Color(0xBFCCCCD6),
+            borderRadius: BorderRadius.circular(4),
           ),
           child: ListView(
             children:

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../models/travel.dart';
 import '../../models/material.dart';
@@ -20,12 +19,10 @@ class PlayTravelState extends State<PlayTravelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final travel = context.watch<TravelModel>();
     final history = travel.history.values.toList();
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,13 +42,6 @@ class PlayTravelState extends State<PlayTravelScreen> {
                       _selectedIndex = newSelection.first;
                     });
                   },
-                  style: ButtonStyle(
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                  ),
                 ),
               ),
             ),
@@ -74,9 +64,9 @@ class PlayTravelState extends State<PlayTravelScreen> {
                               margin: const EdgeInsets.only(top: 4.0),
                               width: double.infinity,
                               height: 80,
-                              padding: const EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(4.0),
                               decoration: BoxDecoration(
-                                color: Colors.grey[100],
+                                color: Color(0xBFCCCCD6),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -296,7 +286,7 @@ class CreateTravelDialogState extends State<CreateTravelDialog> {
               ),
               child: Text(
                 widget.item.content,
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: const TextStyle(fontSize: 14),
               ),
             ),
             Text("发现了: $mname"),

@@ -1,9 +1,7 @@
 import 'package:boundless_immortality/models/elixir.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../models/material.dart';
 import '../../models/user.dart';
@@ -21,7 +19,6 @@ class PlayBagState extends State<PlayBagScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final materials = context.watch<MaterialModel>();
     final elixirs = context.watch<ElixirModel>();
     final all = [
@@ -30,8 +27,7 @@ class PlayBagState extends State<PlayBagScreen> {
       _showElixirItem(context, elixirs.items.values.toList()),
     ];
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           children: [
@@ -49,13 +45,6 @@ class PlayBagState extends State<PlayBagScreen> {
                     _selectedIndex = newSelection.first;
                   });
                 },
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                  ),
-                ),
               ),
             ),
             const SizedBox(height: 8),

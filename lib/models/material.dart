@@ -146,9 +146,8 @@ class MaterialItemWidget extends StatelessWidget {
     this.attribute,
     this.number,
     this.onClick,
-    this.lock, {
-    super.key,
-  });
+    this.lock,
+    {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -158,17 +157,22 @@ class MaterialItemWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color:
               lock
-                  ? Colors.grey[400]
+                  ? Color(0x40CCCCD6)
                   : (attribute != 0
-                      ? (number == 0 ? Colors.grey[200] : Colors.blue[200])
+                      ? (number == 0 ? Color(0x40CCCCD6) : Color(0xBFCCCCD6))
                       : Colors.white),
           border: Border.all(color: Colors.black),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
         ),
         child: Stack(
           children: [
             Positioned.fill(
-              child: Center(child: Text(name, style: TextStyle(fontSize: 14))),
+              child: Center(
+                child: Text(
+                  name,
+                  style: TextStyle(fontSize: 14, color: Colors.black),
+                ),
+              ),
             ),
             if (attribute != 0)
               Positioned(
@@ -179,12 +183,11 @@ class MaterialItemWidget extends StatelessWidget {
                   width: 20,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: Colors.grey.withAlpha(100),
                     borderRadius: BorderRadius.circular(25.0),
                   ),
                   child: Text(
                     attributes[attribute],
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(color: attributeColors[attribute], fontSize: 12),
                   ),
                 ),
               ),
@@ -202,7 +205,7 @@ class MaterialItemWidget extends StatelessWidget {
                   ),
                   child: Text(
                     "$number",
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(color: Colors.black, fontSize: 12),
                   ),
                 ),
               ),

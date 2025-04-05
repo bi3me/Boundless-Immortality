@@ -1,5 +1,6 @@
 import 'dart:developer' as dev;
 
+import 'package:boundless_immortality/common/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +14,6 @@ import 'screens/settings/persistence/local_storage_settings_persistence.dart';
 import 'screens/settings/persistence/settings_persistence.dart';
 import 'screens/settings/settings.dart';
 import 'screens/settings/settings_screen.dart';
-import 'screens/style/palette.dart';
 import 'screens/style/snack_bar.dart';
 
 import 'screens/login/login_screen.dart';
@@ -275,20 +275,60 @@ class MyApp extends StatelessWidget {
             },
             dispose: (context, audio) => audio.dispose(),
           ),
-          Provider(create: (context) => Palette()),
         ],
         child: Builder(
           builder: (context) {
-            final palette = context.watch<Palette>();
+            final attribute = context.watch<UserModel>().attribute;
 
             return MaterialApp.router(
               title: 'Boundless Immortality',
-              theme: ThemeData.from(
-                colorScheme: ColorScheme.fromSeed(
-                  seedColor: palette.darkPen,
-                  surface: palette.backgroundMain,
+              theme: ThemeData(
+                textTheme: TextTheme(
+                  bodyMedium: TextStyle(color: Colors.white),
                 ),
-                textTheme: TextTheme(bodyMedium: TextStyle(color: palette.ink)),
+                elevatedButtonTheme: ElevatedButtonThemeData(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xBFCCCCD6),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                    ),
+                  ),
+                ),
+                dialogTheme: DialogTheme(
+                  backgroundColor: Color(0xBFCCCCD6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                  ),
+                ),
+                cardTheme: CardTheme(
+                  color: Color(0xBFCCCCD6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4.0),
+                  ),
+                ),
+                segmentedButtonTheme: SegmentedButtonThemeData(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(Color(0xBFCCCCD6)),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0),
+                      ),
+                    ),
+                  ),
+                ),
+                filledButtonTheme: FilledButtonThemeData(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all(attributeColors[attribute]),
+                    foregroundColor: WidgetStateProperty.all(attributeFontColors[attribute]),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4.0),
+                      ),
+                    ),
+                  ),
+                ),
               ),
               routeInformationProvider: _router.routeInformationProvider,
               routeInformationParser: _router.routeInformationParser,

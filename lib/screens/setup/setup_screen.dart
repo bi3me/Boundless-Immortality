@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 
 import '../../models/user.dart';
@@ -27,10 +26,7 @@ class SetupState extends State<SetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
-
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           children: [
@@ -84,14 +80,14 @@ class SetupState extends State<SetupScreen> {
                     },
                     child: const Text('阴阳五行测灵根'),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.all(20),
                     child: Center(
                       child: Text(
-                        '火',
+                        attributes[(_attribute ?? 0) + 1],
                         style: TextStyle(
-                          fontFamily: 'Permanent Marker',
-                          fontSize: 50,
+                          color: attributeColors[(_attribute??0) +1],
+                          fontSize: 40,
                         ),
                       ),
                     ),
@@ -128,9 +124,9 @@ class SetupState extends State<SetupScreen> {
                         }).toList(),
                   ),
                   Container(
-                    height: 100,
+                    // height: 100,
                     padding: EdgeInsets.all(10),
-                    child: Text('ssssssssssss'),
+                    child: Text(''),
                   ),
                 ],
               ),

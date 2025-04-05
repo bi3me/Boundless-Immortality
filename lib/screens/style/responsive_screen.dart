@@ -5,6 +5,68 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+class CustomScaffold extends StatelessWidget {
+  final Widget body; // 页面的主要内容
+  final AppBar? appBar; // 可选的 AppBar
+  final String backgroundImagePath; // 背景图路径
+
+  const CustomScaffold({
+    super.key,
+    required this.body,
+    this.appBar,
+    this.backgroundImagePath = 'assets/images/background.png',
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: appBar,
+      body: Stack(
+        children: [
+          // 背景图层
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(backgroundImagePath),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // 前景内容
+          body,
+        ],
+      ),
+    );
+  }
+}
+
+class CustomDialog extends StatelessWidget {
+  final String title;
+  final Widget content;
+  final List<Widget>? actions;
+
+  const CustomDialog({required this.title, required this.content, this.actions, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.transparent,
+      contentPadding: EdgeInsets.zero,
+      content: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/background.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: content,
+      ),
+      actions: actions,
+    );
+  }
+}
+
 /// A widget that makes it easy to create a screen with a square-ish
 /// main area, a smaller menu area, and a small area for a message on top.
 /// It works in both orientations on mobile- and tablet-sized screens.
@@ -57,31 +119,30 @@ class ResponsiveScreen extends StatelessWidget {
               SafeArea(
                 top: false,
                 maintainBottomViewPadding: true,
-                child: Padding(padding: padding,
+                child: Padding(
+                  padding: padding,
                   child: Row(
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       if (backable)
-                      Container(
-                        margin: const EdgeInsets.only(right: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.grey,
-                          shape: BoxShape.circle,
-                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 10),
                         child: ElevatedButton(
                           onPressed: () => GoRouter.of(context).pop(),
                           child: const Row(
                             children: [
                               Icon(Icons.home),
                               Icon(Icons.chevron_left),
-                            ]
+                            ],
                           ),
                         ),
                       ),
                       if (rectangularMenuArea != null)
-                      Expanded(child: rectangularMenuArea ?? SizedBox.shrink())
+                        Expanded(
+                          child: rectangularMenuArea ?? SizedBox.shrink(),
+                        ),
                     ],
-                  )
+                  ),
                 ),
               ),
             ],

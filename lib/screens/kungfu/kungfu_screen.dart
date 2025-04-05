@@ -2,7 +2,6 @@ import 'package:boundless_immortality/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../models/kungfu.dart';
 import '../../common/constants.dart';
@@ -17,13 +16,11 @@ class PlayKungfuScreen extends StatefulWidget {
 class PlayKungfuState extends State<PlayKungfuScreen> {
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final kungfu = context.watch<KungfuModel>();
     final user = context.watch<UserModel>();
     final availableTimes = kungfu.availableForCreate(user.level);
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,16 +29,20 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
               "修炼功法",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            kungfu.working != null
-                ? ExpansionTile(
-                  title: Text(kungfu.working?.name ?? ''),
-                  children: <Widget>[
-                    Text(
-                      "${attributes[kungfu.working?.myattribute ?? 0]} 属性，最高可修炼至 ${levels[kungfu.working?.level ?? 0]} 境界",
-                    ),
-                  ],
-                )
-                : ListTile(title: Text('无')),
+            Card(
+              margin: EdgeInsets.symmetric(vertical: 4),
+              child:
+                  kungfu.working != null
+                      ? ExpansionTile(
+                        title: Text(kungfu.working?.name ?? ''),
+                        children: <Widget>[
+                          Text(
+                            "${attributes[kungfu.working?.myattribute ?? 0]} 属性，最高可修炼至 ${levels[kungfu.working?.level ?? 0]} 境界",
+                          ),
+                        ],
+                      )
+                      : ListTile(title: Text('无')),
+            ),
             SizedBox(height: 40),
             _buildOtherSkills(kungfu, user),
           ],
@@ -67,22 +68,25 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
           spacing: 10,
           children:
               kungfu.items.values.map((item) {
-                return ExpansionTile(
-                  title: Text(item.name),
-                  trailing:
-                      item.working
-                          ? null
-                          : ElevatedButton(
-                            onPressed: () async {
-                              await kungfu.change(item.kungfuId, user);
-                            },
-                            child: Text(item.working ? "修炼中" : "改修"),
-                          ),
-                  children: <Widget>[
-                    Text(
-                      "${attributes[item.myattribute]} 属性，最高可修炼至 ${levels[item.level]} 境界",
-                    ),
-                  ],
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                  child: ExpansionTile(
+                    title: Text(item.name),
+                    trailing:
+                        item.working
+                            ? null
+                            : ElevatedButton(
+                              onPressed: () async {
+                                await kungfu.change(item.kungfuId, user);
+                              },
+                              child: Text(item.working ? "修炼中" : "改修"),
+                            ),
+                    children: <Widget>[
+                      Text(
+                        "${attributes[item.myattribute]} 属性，最高可修炼至 ${levels[item.level]} 境界",
+                      ),
+                    ],
+                  ),
                 );
               }).toList(),
         ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../models/weapon.dart';
 import '../../models/user.dart';
@@ -18,12 +17,10 @@ class PlayWeaponScreen extends StatefulWidget {
 class PlayWeaponState extends State<PlayWeaponScreen> {
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final user = context.read<UserModel>();
     final weapon = context.watch<WeaponModel>();
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: SingleChildScrollView(
           child: Column(
@@ -34,10 +31,13 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
               final first = weapon.items[posList[0]];
               final isWorking = first?.working ?? false;
               final firstname = isWorking ? first?.name : '';
-              return ExpansionTile(
-                title: Text("${weaponPos[pos]}: $firstname"),
-                trailing: Text(levels[first?.level ?? 0]),
-                children: _buildOtherSkills(posList, weapon, user),
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 4),
+                child: ExpansionTile(
+                  title: Text("${weaponPos[pos]}: $firstname"),
+                  trailing: Text(levels[first?.level ?? 0]),
+                  children: _buildOtherSkills(posList, weapon, user),
+                ),
               );
             }),
           ),
@@ -70,7 +70,10 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
 
       return ListTile(
         title: Text(item?.name ?? ''),
-        subtitle: item != null ? Text('生命+$hp, 攻击+$attack, 防御+$defense, 暴击+$hit, 闪避+$dodge') : null,
+        subtitle:
+            item != null
+                ? Text('生命+$hp, 攻击+$attack, 防御+$defense, 暴击+$hit, 闪避+$dodge')
+                : null,
         trailing:
             item != null && !working
                 ? ElevatedButton(

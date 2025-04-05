@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 
 class PlayMateScreen extends StatefulWidget {
@@ -15,12 +14,9 @@ class PlayMateScreen extends StatefulWidget {
 class PlayMateState extends State<PlayMateScreen> {
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
-
     List<String> otherSkills = ["张三", "李四", "王二毛"];
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

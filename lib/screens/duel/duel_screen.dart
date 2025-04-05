@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../style/palette.dart';
 import '../style/responsive_screen.dart';
 import '../../models/duel.dart';
 import '../../models/user.dart';
@@ -21,7 +20,6 @@ class PlayDuelState extends State<PlayDuelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final palette = context.watch<Palette>();
     final duel = context.watch<DuelModel>();
     final user = context.read<UserModel>();
     List<ActivedDuelItem> items = [];
@@ -38,11 +36,10 @@ class PlayDuelState extends State<PlayDuelScreen> {
 
     final widgets = [
       _showActivedDuel(items, duel, user),
-      _showHistoryDuel(duel.history.values.toList()),
+      _showHistoryDuel(duel.history.values.toList(), user.attribute),
     ];
 
-    return Scaffold(
-      backgroundColor: palette.backgroundLevelSelection,
+    return CustomScaffold(
       body: ResponsiveScreen(
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,13 +59,6 @@ class PlayDuelState extends State<PlayDuelScreen> {
                       _selectedIndex = newSelection.first;
                     });
                   },
-                  style: ButtonStyle(
-                    shape: WidgetStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                    ),
-                  ),
                 ),
               ),
             ),
@@ -103,7 +93,7 @@ class PlayDuelState extends State<PlayDuelScreen> {
         final isMy = items[index].player == user.id;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 4),
-          color: isMe ? Colors.green[200] : Colors.grey[200],
+          color: isMe ? attributeColors[user.attribute] : Color(0xBFCCCCD6),
           child: ListTile(
             title: Text(isMy ? '我的擂台' : items[index].name),
             subtitle: Text(
@@ -134,14 +124,14 @@ class PlayDuelState extends State<PlayDuelScreen> {
     );
   }
 
-  Widget _showHistoryDuel(List<DuelItem> items) {
+  Widget _showHistoryDuel(List<DuelItem> items, int attribute) {
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, index) {
         final bool win = items[index].win ?? false;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 4),
-          color: win ? Colors.green[200] : Colors.grey[400],
+          color: win ? attributeColors[attribute] : Color(0xBFCCCCD6),
           child: ListTile(
             title: Text(win ? '胜利' : '失败'),
             trailing: Text("${items[index].coin} 灵石"),
