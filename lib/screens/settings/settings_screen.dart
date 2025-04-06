@@ -7,6 +7,13 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../common/in_app_purchase/in_app_purchase.dart';
+import '../../models/user.dart';
+import '../../models/kungfu.dart';
+import '../../models/material.dart';
+import '../../models/elixir.dart';
+import '../../models/weapon.dart';
+import '../../models/duel.dart';
+import '../../models/travel.dart';
 import '../style/responsive_screen.dart';
 import 'settings.dart';
 
@@ -77,10 +84,21 @@ class SettingsScreen extends StatelessWidget {
             _gap,
             Spacer(),
             ListTile(
-              title: Center(child: Text('退出当前账号', style: TextStyle(color: Colors.red[500]))),
+              title: Center(
+                child: Text('退出当前账号', style: TextStyle(color: Colors.red[500])),
+              ),
               onTap: () {
-                GoRouter.of(context).go('/');
-            })
+                // clear all items
+                context.read<KungfuModel>().clear();
+                context.read<MaterialModel>().clear();
+                context.read<ElixirModel>().clear();
+                context.read<WeaponModel>().clear();
+                context.read<DuelModel>().clear();
+                context.read<TravelModel>().clear();
+                context.read<UserModel>().clear();
+                GoRouter.of(context).go('/login');
+              },
+            ),
           ],
         ),
         rectangularMenuArea: FilledButton(

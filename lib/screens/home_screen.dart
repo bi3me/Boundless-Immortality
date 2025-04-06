@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +31,7 @@ class HomeScreen extends StatelessWidget {
           _isDesktop
               ? Row(
                 children: [
-                  SizedBox(width: 400, child: PlayScreen()),
+                  SizedBox(width: 350, child: PlayScreen()),
                   Expanded(child: user.detailPage),
                 ],
               )
@@ -46,6 +48,27 @@ class PlayScreen extends StatefulWidget {
 }
 
 class PlayState extends State<PlayScreen> {
+  Timer? _timer;
+
+  void _startDelayedTask() {
+    // 10min settle once
+    _timer = Timer(Duration(seconds: 360), () {
+      context.read<UserModel>().settle();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _startDelayedTask();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserModel>();
@@ -64,7 +87,7 @@ class PlayState extends State<PlayScreen> {
                   children: [
                     _buildProfileHeader(user),
                     const SizedBox(height: 10),
-                    _buildExperienceBar(user.level, user.levelNum),
+                    _buildExperienceBar(user),
                     const SizedBox(height: 10),
                     _buildStatsRow(user),
                     const SizedBox(height: 20),
@@ -112,18 +135,40 @@ class PlayState extends State<PlayScreen> {
     );
   }
 
-  Widget _buildExperienceBar(int level, int levelNum) {
+  Widget _buildExperienceBar(UserModel user) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("当前: ${levels[level]}, 修为: $levelNum / ${levelsNum[level]}"),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "当前: ${levels[user.level]}, 修为: ${user.levelNum} / ${levelsNum[user.level]}",
+              ),
+              TextButton(
+                onPressed: () => user.settle(),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  minimumSize: Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  '升级',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: attributeColors[user.attribute],
+                  ),
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 4),
           LinearProgressIndicator(
-            value: levelNum / levelsNum[level],
+            value: user.levelNum / levelsNum[user.level],
             backgroundColor: Colors.grey[300],
-            color: Colors.blue,
+            color: attributeColors[user.attribute],
           ),
         ],
       ),

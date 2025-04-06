@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 
 import 'common/app_lifecycle/app_lifecycle.dart';
 import 'common/audio/audio_controller.dart';
+import 'common/token.dart';
+import 'common/auth_http.dart';
 
 import 'screens/settings/persistence/local_storage_settings_persistence.dart';
 import 'screens/settings/persistence/settings_persistence.dart';
@@ -117,84 +119,119 @@ Future<void> main() async {
 
 Logger _log = Logger('main.dart');
 
+Future<(String, Map<String, dynamic>)> _getInitialRoute() async {
+  final res = await TokenManager.getToken();
+  if (res != null) {
+    final response = await AuthHttpClient().get(AuthHttpClient.uri('users'));
+
+    final data = AuthHttpClient.res(response);
+    if (data == null) {
+      return ('/login', {'': 1});
+    } else {
+      return ('/play', data);
+    }
+  }
+  return ('/login', {'': 1});
+}
+
 class MyApp extends StatelessWidget {
   static get routers => [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const LoginScreen(key: Key('login'))),
-      GoRoute(
-        path: '/setup',
-        builder: (context, state) {
-          final (email, password) = state.extra as (String, String);
-          return SetupScreen(email: email, password: password, key: Key('setup'));
-      }),
-      GoRoute(
-        path: '/settings',
-        builder: (context, state) => const SettingsScreen(key: Key('settings')),
-      ),
-      GoRoute(
-        path: '/play',
-        builder: (context, state) => HomeScreen(key: Key('play'))),
-      GoRoute(
-        path: '/play/kungfu',
-        builder: (context, state) {
-          context.read<KungfuModel>().load();
-          return const PlayKungfuScreen(key: Key('play_kungfu'));
-      }),
-      GoRoute(
-        path: '/play/weapon',
-        builder: (context, state) {
-          context.read<WeaponModel>().load();
-          return const PlayWeaponScreen(key: Key('play_weapon'));
-      }),
-      GoRoute(
-        path: '/play/bag',
-        builder: (context, state) {
-          context.read<MaterialModel>().load();
-          return const PlayBagScreen(key: Key('play_bag'));
-      }),
-      GoRoute(
-        path: '/play/elixir',
-        builder: (context, state) {
-          context.read<ElixirModel>().load();
-          return const PlayElixirScreen(key: Key('play_elixir'));
-      }),
-      GoRoute(
-        path: '/play/forging',
-        builder: (context, state) {
-          context.read<WeaponModel>().load();
-          return const PlayForgingScreen(key: Key('play_forging'));
-      }),
-      GoRoute(
-        path: '/play/duel',
-        builder: (context, state) {
-          context.read<DuelModel>().load();
-          return const PlayDuelScreen(key: Key('play_duel'));
-      }),
-      GoRoute(
-        path: '/play/market',
-        builder: (context, state) {
-          context.read<MarketModel>().load();
-          return const PlayMarketScreen(key: Key('play_market'));
-      }),
-      GoRoute(
-        path: '/play/travel',
-        builder: (context, state) {
-          context.read<TravelModel>().load();
-          return const PlayTravelScreen(key: Key('play_travel'));
-      }),
-      GoRoute(
-        path: '/play/friend',
-        builder:
-        (context, state) => const PlayFriendScreen(key: Key('play_friend')),
-      ),
-      GoRoute(
-        path: '/play/mate',
-        builder: (context, state) => const PlayMateScreen(key: Key('play_mate')),
-      ),
-    ];
+    GoRoute(
+      path: '/splash',
+      builder: (context, state) => SplashScreen(future: _getInitialRoute()),
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) {
+        return const LoginScreen(key: Key('login'));
+      },
+    ),
+    GoRoute(
+      path: '/setup',
+      builder: (context, state) {
+        final (email, password) = state.extra as (String, String);
+        return SetupScreen(email: email, password: password, key: Key('setup'));
+      },
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(key: Key('settings')),
+    ),
+    GoRoute(
+      path: '/play',
+      builder: (context, state) => HomeScreen(key: Key('play')),
+    ),
+    GoRoute(
+      path: '/play/kungfu',
+      builder: (context, state) {
+        context.read<KungfuModel>().load();
+        return const PlayKungfuScreen(key: Key('play_kungfu'));
+      },
+    ),
+    GoRoute(
+      path: '/play/weapon',
+      builder: (context, state) {
+        context.read<WeaponModel>().load();
+        return const PlayWeaponScreen(key: Key('play_weapon'));
+      },
+    ),
+    GoRoute(
+      path: '/play/bag',
+      builder: (context, state) {
+        context.read<MaterialModel>().load();
+        return const PlayBagScreen(key: Key('play_bag'));
+      },
+    ),
+    GoRoute(
+      path: '/play/elixir',
+      builder: (context, state) {
+        context.read<ElixirModel>().load();
+        return const PlayElixirScreen(key: Key('play_elixir'));
+      },
+    ),
+    GoRoute(
+      path: '/play/forging',
+      builder: (context, state) {
+        context.read<WeaponModel>().load();
+        return const PlayForgingScreen(key: Key('play_forging'));
+      },
+    ),
+    GoRoute(
+      path: '/play/duel',
+      builder: (context, state) {
+        context.read<DuelModel>().load();
+        return const PlayDuelScreen(key: Key('play_duel'));
+      },
+    ),
+    GoRoute(
+      path: '/play/market',
+      builder: (context, state) {
+        context.read<MarketModel>().load();
+        return const PlayMarketScreen(key: Key('play_market'));
+      },
+    ),
+    GoRoute(
+      path: '/play/travel',
+      builder: (context, state) {
+        context.read<TravelModel>().load();
+        return const PlayTravelScreen(key: Key('play_travel'));
+      },
+    ),
+    GoRoute(
+      path: '/play/friend',
+      builder:
+          (context, state) => const PlayFriendScreen(key: Key('play_friend')),
+    ),
+    GoRoute(
+      path: '/play/mate',
+      builder: (context, state) => const PlayMateScreen(key: Key('play_mate')),
+    ),
+  ];
 
-  static get router => GoRouter(routes: routers);
+  late final GoRouter _router = GoRouter(
+    initialLocation: '/splash',
+    routes: routers,
+  );
 
   final SettingsPersistence settingsPersistence;
 
@@ -202,7 +239,7 @@ class MyApp extends StatelessWidget {
 
   // final AdsController? adsController;
 
-  const MyApp({
+  MyApp({
     required this.settingsPersistence,
     // required this.inAppPurchaseController,
     // required this.adsController,
@@ -211,7 +248,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final myRouter = router;
     return AppLifecycleObserver(
       child: MultiProvider(
         providers: [
@@ -259,6 +295,7 @@ class MyApp extends StatelessWidget {
             final attribute = context.watch<UserModel>().attribute;
 
             return MaterialApp.router(
+              routerConfig: _router,
               title: 'Boundless Immortality',
               builder:
                   (context, child) => Stack(
@@ -276,7 +313,7 @@ class MyApp extends StatelessWidget {
                   ),
               theme: ThemeData(
                 textTheme: TextTheme(
-                  bodyMedium: TextStyle(color: Colors.white),
+                  bodyMedium: TextStyle(color: Colors.black),
                 ),
                 elevatedButtonTheme: ElevatedButtonThemeData(
                   style: ElevatedButton.styleFrom(
@@ -326,14 +363,34 @@ class MyApp extends StatelessWidget {
                   ),
                 ),
               ),
-              routeInformationProvider: myRouter.routeInformationProvider,
-              routeInformationParser: myRouter.routeInformationParser,
-              routerDelegate: myRouter.routerDelegate,
               scaffoldMessengerKey: scaffoldMessengerKey,
             );
           },
         ),
       ),
+    );
+  }
+}
+
+class SplashScreen extends StatelessWidget {
+  final Future<(String, Map<String, dynamic>)> future;
+
+  const SplashScreen({required this.future, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<(String, Map<String, dynamic>)>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          final (route, data) = snapshot.data!;
+          context.read<UserModel>().fromNetwork(data);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.go(route);
+          });
+        }
+        return Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
     );
   }
 }

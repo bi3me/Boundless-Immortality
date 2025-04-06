@@ -1,3 +1,4 @@
+import 'package:boundless_immortality/models/kungfu.dart';
 import 'package:flutter/foundation.dart';
 
 import '../common/auth_http.dart';

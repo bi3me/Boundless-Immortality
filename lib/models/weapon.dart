@@ -65,6 +65,12 @@ class WeaponModel extends ChangeNotifier {
 
   Map<int, int> countByLevel = {};
 
+  void clear() {
+    items.clear();
+    poses.clear();
+    countByLevel.clear();
+  }
+
   int availableForCreate(int level) {
     final already = countByLevel[level] ?? 0;
     int times = 0;
@@ -106,7 +112,7 @@ class WeaponModel extends ChangeNotifier {
     if (data == null) {
       // none
     } else {
-      user.fromNetwork(data); // update user
+      user.update(data); // update user
       notifyListeners();
     }
   }

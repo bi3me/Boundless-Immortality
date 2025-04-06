@@ -21,6 +21,8 @@ class PlayElixirState extends State<PlayElixirScreen> {
   bool _canCreateNew = true;
   bool _loading = false;
   int? _selectedElixir;
+  Map<int, ElixirItem> _elixirsItems = {};
+  Map<int, bool> _disabledElixirs = {};
 
   Map<int, int> selectedMaterialsNum = {};
   List<int> selectedMaterialsIds = [];
@@ -28,7 +30,8 @@ class PlayElixirState extends State<PlayElixirScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final materials = context.watch<MaterialModel>().elixirsItems;
+    final mm = context.watch<MaterialModel>();
+    final materials = mm.elixirsItems;
     final elixirs = context.watch<ElixirModel>();
     if (tmpMaterialsNum.isEmpty && materials.isNotEmpty) {
       materials.forEach((k, v) {
@@ -38,6 +41,7 @@ class PlayElixirState extends State<PlayElixirScreen> {
     myLevel = context.watch<UserModel>().level;
     final availableTimes = elixirs.availableForCreate(myLevel);
     _canCreateNew = _selectedElixir != null || availableTimes > 0;
+    _elixirsItems = elixirs.items;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -45,7 +49,7 @@ class PlayElixirState extends State<PlayElixirScreen> {
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildRecipeSelection(elixirs.items),
+            _buildRecipeSelection(materials),
             _buildAlchemyGrid(materials),
             Divider(),
             _buildMaterialsSelection(materials.values.toList()),
@@ -58,21 +62,24 @@ class PlayElixirState extends State<PlayElixirScreen> {
                   ? null
                   : () {
                     _selectedElixir != null
-                        ? _startAlchemy(context, elixirs)
+                        ? _startAlchemy(context, elixirs, mm)
                         : showDialog(
                           context: context,
                           builder: (BuildContext dialogContext) {
-                            return CreateCharacterDialog(selectedMaterialsNum);
+                            return CreateCharacterDialog(
+                              selectedMaterialsNum,
+                              successCallback,
+                            );
                           },
                         );
                   },
-          child: Text(_loading ? '炼丹中' : "炼丹 (剩 $availableTimes 次)"),
+          child: Text(_loading ? '炼丹中' : "炼丹 (${levels[myLevel]}剩 $availableTimes 次)"),
         ),
       ),
     );
   }
 
-  Widget _buildRecipeSelection(Map<int, ElixirItem> items) {
+  Widget _buildRecipeSelection(Map<int, MaterialItem> items) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
@@ -81,18 +88,33 @@ class PlayElixirState extends State<PlayElixirScreen> {
           isExpanded: true,
           hint: Text("选择丹方"),
           value: _selectedElixir,
-          onChanged: (newRecipe) {
-            setState(() {
-              _selectedElixir = newRecipe;
-              // TODO check materials
-              // selectedIngredients = List.from(recipes[newRecipe!] ?? []);
-            });
-          },
+          onChanged: _selectElixir,
           items:
-              items.values.map((item) {
+              _elixirsItems.values.map((item) {
+                final id = item.elixirId;
+                bool avaiable = true;
+                final itemMaterials = item.materials();
+                if (itemMaterials.length > myLevel) {
+                  avaiable = false;
+                  _disabledElixirs[id] = false;
+                } else {
+                  itemMaterials.forEach((k, v) {
+                    final n = items[k]?.number ?? 0;
+                    if (n > myLevel || n < v) {
+                      avaiable = false;
+                      _disabledElixirs[k] = false;
+                    }
+                  });
+                }
                 return DropdownMenuItem<int>(
-                  value: item.elixirId,
-                  child: Text(item.name),
+                  enabled: avaiable,
+                  value: id,
+                  child: Text(
+                    item.name,
+                    style: TextStyle(
+                      color: avaiable ? Colors.black : Colors.grey,
+                    ),
+                  ),
                 );
               }).toList(),
         ),
@@ -166,6 +188,44 @@ class PlayElixirState extends State<PlayElixirScreen> {
     );
   }
 
+  void _selectElixir(int? index) {
+    if (_disabledElixirs.containsKey(index)) {
+      return;
+    }
+
+    _selectedElixir = index;
+
+    if (_elixirsItems[index] != null) {
+      // clear old
+      if (selectedMaterialsNum.isNotEmpty) {
+        List<int> needRemoved = [];
+        selectedMaterialsNum.forEach((k, n) {
+          final tn = tmpMaterialsNum[k] ?? 0;
+          tmpMaterialsNum[k] = tn + n;
+          needRemoved.add(k);
+        });
+        for (var k in needRemoved) {
+          selectedMaterialsNum.remove(k);
+          selectedMaterialsIds.remove(k);
+        }
+      }
+
+      // add new
+      final itemMaterials = _elixirsItems[index]?.materials() ?? {};
+      itemMaterials.forEach((k, n) {
+        final tn = tmpMaterialsNum[k] ?? 0;
+        if (tn < n) {
+          return;
+        }
+        tmpMaterialsNum[k] = tn - n;
+        selectedMaterialsNum[k] = n;
+        selectedMaterialsIds.add(k);
+      });
+    }
+
+    setState(() {});
+  }
+
   void _removeItem(int index) {
     final n = selectedMaterialsNum[index];
     if (n == null) {
@@ -181,7 +241,9 @@ class PlayElixirState extends State<PlayElixirScreen> {
     } else {
       selectedMaterialsNum[index] = n - 1;
     }
-    setState(() {});
+    setState(() {
+      _selectedElixir = null;
+    });
   }
 
   void _addItem(int index) {
@@ -211,27 +273,46 @@ class PlayElixirState extends State<PlayElixirScreen> {
       tmpMaterialsNum[fid] = ftn + fsn;
     }
 
-    setState(() {});
+    setState(() {
+      _selectedElixir = null;
+    });
   }
 
-  void _startAlchemy(BuildContext context, ElixirModel elixirs) async {
+  void _startAlchemy(
+    BuildContext context,
+    ElixirModel elixirs,
+    MaterialModel mm,
+  ) async {
     setState(() {
       _loading = true;
     });
 
-    final res = await elixirs.create(selectedMaterialsNum, "");
+    final res = await elixirs.create(
+      selectedMaterialsNum,
+      _elixirsItems[_selectedElixir]?.name ?? '',
+    );
 
     _loading = false;
     if (res) {
+      mm.elixirUsed(selectedMaterialsNum);
+      successCallback();
       // success
     }
+  }
+
+  void successCallback() {
+    setState(() {
+      selectedMaterialsNum.clear();
+      selectedMaterialsIds.clear();
+    });
   }
 }
 
 class CreateCharacterDialog extends StatefulWidget {
   final Map<int, int> materials;
+  final Function callback;
 
-  const CreateCharacterDialog(this.materials, {super.key});
+  const CreateCharacterDialog(this.materials, this.callback, {super.key});
 
   @override
   CreateCharacterDialogState createState() => CreateCharacterDialogState();
@@ -266,7 +347,14 @@ class CreateCharacterDialogState extends State<CreateCharacterDialog> {
 
     _loading = false;
     if (res) {
-      if (context.mounted) Navigator.of(context).pop();
+      setState(() {
+        _error = '成功放入背包！';
+      });
+      widget.callback();
+      if (context.mounted) context.read<MaterialModel>().elixirUsed(widget.materials);
+      Future.delayed(Duration(seconds: 1), () {
+        if (context.mounted) Navigator.of(context).pop();
+      });
     } else {
       setState(() {
         _error = "Failure";

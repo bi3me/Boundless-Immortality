@@ -11,6 +11,7 @@ class BroadcastItem {
   const BroadcastItem(this.id, this.btype, this.content, this.createdAt);
 
   String show() {
+    print(content);
     return content;
   }
 }
@@ -20,10 +21,12 @@ class BroadcastModel extends ChangeNotifier {
 
   /// Update user data from network (fully info)
   void fromNetwork(Map<String, dynamic> item) {
+    print(item);
     final id = item['id'];
     final btype = item['btype'];
     final content = item['content'];
     final createdAt = DateTime.parse(item['created_at']);
+    print(item);
     items.add(BroadcastItem(id, btype, content, createdAt));
   }
 

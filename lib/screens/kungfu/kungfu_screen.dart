@@ -50,7 +50,7 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
         ),
         rectangularMenuArea: FilledButton(
           onPressed: availableTimes == 0 ? null : () => _showCreateDialog(context, user.level, user.attribute),
-          child: Text("创建功法 (剩 $availableTimes 次)"),
+          child: Text("创建功法 (${levels[user.level]}剩 $availableTimes 次)"),
         ),
       ),
     );

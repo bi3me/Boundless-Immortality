@@ -29,6 +29,10 @@ class UserModel extends ChangeNotifier {
 
   Widget detailPage = SizedBox.shrink();
 
+  void clear() {
+    detailPage = SizedBox.shrink();
+  }
+
   void router(BuildContext context, String path) {
     final screenWidth = MediaQuery.of(context).size.width;
     if (screenWidth > 760) {
@@ -46,6 +50,10 @@ class UserModel extends ChangeNotifier {
 
   /// Update user data from network (fully info)
   void fromNetwork(Map<String, dynamic> json) {
+    if (!json.containsKey('id')) {
+      return;
+    }
+
     id = json['id'];
     name = json['name'];
     email = json['email'];
@@ -65,13 +73,34 @@ class UserModel extends ChangeNotifier {
     mate = json['mate'];
     nextMate = DateTime.parse(json['next_mate']);
     avatar = json['avatar'];
+  }
 
+  void update(Map<String, dynamic> json) {
+    fromNetwork(json);
     notifyListeners();
   }
 
   /// Settle current level & power
-  void settle() {
-    //
+  void settle() async {
+    final response = await AuthHttpClient().post(
+      AuthHttpClient.uri('users/settle'),
+    );
+
+    final data = AuthHttpClient.res(response);
+    if (data != null) {
+      level = data['level'];
+      levelNum = data['level_num'];
+      levelUp = data['level_up'];
+      coin = data['coin'];
+      power = data['power'];
+      powerUp = data['power_up'];
+      powerHp = data['power_hp'];
+      powerAttack = data['power_attack'];
+      powerDefense = data['power_defense'];
+      powerHit = data['power_hit'];
+      powerDodge = data['power_dodge'];
+      notifyListeners();
+    }
   }
 
   /// Login with email & password
@@ -86,7 +115,7 @@ class UserModel extends ChangeNotifier {
       return false;
     } else {
       await TokenManager.saveToken(data['token']);
-      fromNetwork(data['user']);
+      update(data['user']);
       return true;
     }
   }
@@ -113,7 +142,7 @@ class UserModel extends ChangeNotifier {
       return false;
     } else {
       await TokenManager.saveToken(data['token']);
-      fromNetwork(data['user']);
+      update(data['user']);
       return true;
     }
   }

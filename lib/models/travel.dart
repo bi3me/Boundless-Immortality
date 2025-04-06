@@ -35,10 +35,10 @@ class MyTravelItem {
   final int travelId;
   final int ttype;
   final String name;
-  final bool material;
+  bool material;
   final DateTime createdAt;
 
-  const MyTravelItem(
+  MyTravelItem(
     this.travelId,
     this.ttype,
     this.name,
@@ -52,6 +52,13 @@ class TravelModel extends ChangeNotifier {
   Map<int, MyTravelItem> history = {};
   Map<int, (TravelItem, MaterialItem?)> historyItems = {};
   TravelItem? mine;
+
+  void clear() {
+    latest = 0;
+    history.clear();
+    historyItems.clear();
+    mine = null;
+  }
 
   bool avaiable() {
     if (history.length >= travelMax) {
@@ -131,6 +138,8 @@ class TravelModel extends ChangeNotifier {
     final data = AuthHttpClient.res(response);
     if (data != null) {
       material.fromNetwork(data);
+      history[id]?.material = false;
+      notifyListeners();
       return true;
     } else {
       return false;
@@ -196,7 +205,9 @@ class TravelModel extends ChangeNotifier {
         }
         notifyListeners();
       }
-      mine = itemFromNetwork(data['mine']);
+      if (data['mine'] != null) {
+        mine = itemFromNetwork(data['mine']);
+      }
     }
   }
 }

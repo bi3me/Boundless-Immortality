@@ -8,7 +8,7 @@ class AuthHttpClient extends http.BaseClient {
   final http.Client _inner = http.Client();
 
   static Uri uri(String path) {
-    return Uri.parse("$domain/$path");
+    return Uri.parse("$domain/api/$path");
   }
 
   static String form(Map<String, dynamic> form) {
@@ -28,7 +28,6 @@ class AuthHttpClient extends http.BaseClient {
       }
     } else {
       print(response.statusCode);
-      print(response.body);
       // TODO toast Failed to load data
       return null;
     }

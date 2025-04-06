@@ -100,8 +100,8 @@ class PlayBagState extends State<PlayBagScreen> {
 
   Widget _showElixirItem(BuildContext context, List<ElixirItem> items) {
     return GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 100,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
         childAspectRatio: 1,

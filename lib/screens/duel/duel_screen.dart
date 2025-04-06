@@ -156,8 +156,8 @@ class CreateDuelDialogState extends State<CreateDuelDialog> {
   String? _error;
   bool _loading = false;
   final Map<int, String> _descriptions = {
-    1: '这是选项1的描述文字，详细说明了选择此选项的含义。',
-    2: '这是选项2的描述文字，可能包含不同的信息和说明。',
+    1: '单轮擂台，不管胜负，立即结算。',
+    2: '无限擂台，如果胜利，自动开启下一场，如果失败，结束擂台。',
   };
 
   void _submitData(BuildContext context) async {
@@ -224,7 +224,7 @@ class CreateDuelDialogState extends State<CreateDuelDialog> {
               ),
               child: Text(
                 _descriptions[_dtype] ?? '',
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: const TextStyle(fontSize: 14),
               ),
             ),
             TextFormField(

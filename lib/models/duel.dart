@@ -48,6 +48,12 @@ class DuelModel extends ChangeNotifier {
   Map<int, ActivedDuelItem> mine = {};
   Map<int, DuelItem> history = {};
 
+  void clear() {
+    actives.clear();
+    mine.clear();
+    history.clear();
+  }
+
   Future<bool> create(int dtype, int coin, int? private) async {
     var response = await AuthHttpClient().post(
       AuthHttpClient.uri('users/duels'),
@@ -80,7 +86,7 @@ class DuelModel extends ChangeNotifier {
         fromNetwork(data);
 
         // update user data['user']
-        user.fromNetwork(data['user']);
+        user.update(data['user']);
 
         notifyListeners();
       }

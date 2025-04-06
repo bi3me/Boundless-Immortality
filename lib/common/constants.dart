@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-const String domain = 'http://127.0.0.1:9000';
+const String domain = 'https://bi3.me';
+// const String domain = 'http://127.0.0.1:9000';
 
 const List<String> levels = [
   '',
@@ -76,3 +77,27 @@ const List<Color> attributeFontColors = [
   Colors.black,
   Colors.white,
 ];
+
+int? calculateAttribute(String input) {
+  final RegExp dateRegExp = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
+  if (!dateRegExp.hasMatch(input)) {
+    return null;
+  }
+
+  final match = dateRegExp.firstMatch(input)!;
+  final year = int.parse(match.group(1)!);
+  final month = int.parse(match.group(2)!);
+  final day = int.parse(match.group(3)!);
+
+  // verfy datetime
+  try {
+    DateTime(year, month, day);
+  } catch (e) {
+    return null;
+  }
+
+  int sum = year + month + day;
+  int attribute = sum % 5;
+  if (attribute == 0) attribute = 5;
+  return attribute;
+}

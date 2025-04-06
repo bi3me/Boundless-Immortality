@@ -42,6 +42,11 @@ class MaterialModel extends ChangeNotifier {
     ...weaponItems.values,
   ];
 
+  void clear() {
+    elixirsItems.clear();
+    weaponItems.clear();
+  }
+
   List<(int, String)> availableForSale() {
     List<(int, String)> list = [];
     elixirsItems.forEach((_, v) {
@@ -146,8 +151,9 @@ class MaterialItemWidget extends StatelessWidget {
     this.attribute,
     this.number,
     this.onClick,
-    this.lock,
-    {super.key});
+    this.lock, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +193,10 @@ class MaterialItemWidget extends StatelessWidget {
                   ),
                   child: Text(
                     attributes[attribute],
-                    style: TextStyle(color: attributeColors[attribute], fontSize: 12),
+                    style: TextStyle(
+                      color: attributeColors[attribute],
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ),

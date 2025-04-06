@@ -72,6 +72,12 @@ class KungfuModel extends ChangeNotifier {
     }
   }
 
+  void clear() {
+    items.clear();
+    nowWorking = 0;
+    countByLevel.clear();
+  }
+
   int availableForCreate(int level) {
     final already = countByLevel[level] ?? 0;
     int times = 0;
@@ -106,7 +112,7 @@ class KungfuModel extends ChangeNotifier {
       nowWorking = kungfuId;
 
       // data is user
-      user.fromNetwork(data);
+      user.update(data);
 
       notifyListeners();
     }

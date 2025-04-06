@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'user.dart';
+import 'material.dart';
 import '../common/auth_http.dart';
 
 const elixirEveryLevelMax = 20;
@@ -61,6 +62,11 @@ class ElixirModel extends ChangeNotifier {
   Map<int, ElixirItem> items = {};
   Map<int, int> countByLevel = {};
 
+  void clear() {
+    items.clear();
+    countByLevel.clear();
+  }
+
   int availableForCreate(int level) {
     final already = countByLevel[level] ?? 0;
     int times = 0;
@@ -96,7 +102,7 @@ class ElixirModel extends ChangeNotifier {
     if (data == null) {
       // none
     } else {
-      user.fromNetwork(data); // update user
+      user.update(data); // update user
       notifyListeners();
     }
   }

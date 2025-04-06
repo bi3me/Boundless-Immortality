@@ -20,7 +20,9 @@ class PlayForgingState extends State<PlayForgingScreen> {
   int myLevel = 0;
   bool _canCreateNew = true;
   bool _loading = false;
-  int? _selectedForging;
+  int? _selectedWeapon;
+  Map<int, WeaponItem> _weaponsItems = {};
+  Map<int, bool> _disabledWeapons = {};
 
   Map<int, int> selectedMaterialsNum = {};
   List<int> selectedMaterialsIds = [];
@@ -28,7 +30,8 @@ class PlayForgingState extends State<PlayForgingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final materials = context.watch<MaterialModel>().weaponItems;
+    final mm = context.watch<MaterialModel>();
+    final materials = mm.weaponItems;
     final forgings = context.watch<WeaponModel>();
     if (tmpMaterialsNum.isEmpty && materials.isNotEmpty) {
       materials.forEach((k, v) {
@@ -37,7 +40,8 @@ class PlayForgingState extends State<PlayForgingScreen> {
     }
     myLevel = context.watch<UserModel>().level;
     final availableTimes = forgings.availableForCreate(myLevel);
-    _canCreateNew = _selectedForging != null || availableTimes > 0;
+    _canCreateNew = _selectedWeapon != null || availableTimes > 0;
+    _weaponsItems = forgings.items;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -45,7 +49,7 @@ class PlayForgingState extends State<PlayForgingScreen> {
         squarishMainArea: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildRecipeSelection(forgings.items),
+            _buildRecipeSelection(materials),
             _buildAlchemyGrid(materials),
             Divider(),
             _buildMaterialsSelection(materials.values.toList()),
@@ -57,22 +61,25 @@ class PlayForgingState extends State<PlayForgingScreen> {
               selectedMaterialsIds.isEmpty || _loading || !_canCreateNew
                   ? null
                   : () {
-                    _selectedForging != null
-                        ? _startAlchemy(context, forgings)
+                    _selectedWeapon != null
+                        ? _startAlchemy(context, forgings, mm)
                         : showDialog(
                           context: context,
                           builder: (BuildContext dialogContext) {
-                            return CreateCharacterDialog(selectedMaterialsNum);
+                            return CreateCharacterDialog(
+                              selectedMaterialsNum,
+                              successCallback,
+                            );
                           },
                         );
                   },
-          child: Text(_loading ? '炼制中' : "炼器 (剩 $availableTimes 次)"),
+          child: Text(_loading ? '炼制中' : "炼器 (${levels[myLevel]}剩 $availableTimes 次)"),
         ),
       ),
     );
   }
 
-  Widget _buildRecipeSelection(Map<int, WeaponItem> items) {
+  Widget _buildRecipeSelection(Map<int, MaterialItem> items) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
@@ -80,19 +87,35 @@ class PlayForgingState extends State<PlayForgingScreen> {
         child: DropdownButton<int>(
           isExpanded: true,
           hint: Text("选择图纸"),
-          value: _selectedForging,
-          onChanged: (newRecipe) {
-            setState(() {
-              _selectedForging = newRecipe;
-              // TODO check materials
-              // selectedIngredients = List.from(recipes[newRecipe!] ?? []);
-            });
-          },
+          value: _selectedWeapon,
+          onChanged: _selectWeapon,
           items:
-              items.values.map((item) {
+              _weaponsItems.values.map((item) {
+                final id = item.weaponId;
+                bool avaiable = true;
+                final itemMaterials = item.materials();
+                final pos = itemMaterials.remove(0) ?? 0;
+                if (itemMaterials.length > myLevel) {
+                  avaiable = false;
+                  _disabledWeapons[id] = false;
+                } else {
+                  itemMaterials.forEach((k, v) {
+                    final n = items[k]?.number ?? 0;
+                    if (n > myLevel || n < v) {
+                      avaiable = false;
+                      _disabledWeapons[k] = false;
+                    }
+                  });
+                }
                 return DropdownMenuItem<int>(
-                  value: item.weaponId,
-                  child: Text(item.name),
+                  enabled: avaiable,
+                  value: id,
+                  child: Text(
+                    "${item.name} (${weaponPos[pos]})",
+                    style: TextStyle(
+                      color: avaiable ? Colors.black : Colors.grey,
+                    ),
+                  ),
                 );
               }).toList(),
         ),
@@ -166,6 +189,44 @@ class PlayForgingState extends State<PlayForgingScreen> {
     );
   }
 
+  void _selectWeapon(int? index) {
+    if (_disabledWeapons.containsKey(index)) {
+      return;
+    }
+
+    _selectedWeapon = index;
+
+    if (_weaponsItems[index] != null) {
+      // clear old
+      if (selectedMaterialsNum.isNotEmpty) {
+        List<int> needRemoved = [];
+        selectedMaterialsNum.forEach((k, n) {
+          final tn = tmpMaterialsNum[k] ?? 0;
+          tmpMaterialsNum[k] = tn + n;
+          needRemoved.add(k);
+        });
+        for (var k in needRemoved) {
+          selectedMaterialsNum.remove(k);
+          selectedMaterialsIds.remove(k);
+        }
+      }
+
+      // add new
+      final itemMaterials = _weaponsItems[index]?.materials() ?? {};
+      itemMaterials.forEach((k, n) {
+        final tn = tmpMaterialsNum[k] ?? 0;
+        if (tn < n) {
+          return;
+        }
+        tmpMaterialsNum[k] = tn - n;
+        selectedMaterialsNum[k] = n;
+        selectedMaterialsIds.add(k);
+      });
+    }
+
+    setState(() {});
+  }
+
   void _removeItem(int index) {
     final n = selectedMaterialsNum[index];
     if (n == null) {
@@ -181,7 +242,9 @@ class PlayForgingState extends State<PlayForgingScreen> {
     } else {
       selectedMaterialsNum[index] = n - 1;
     }
-    setState(() {});
+    setState(() {
+      _selectedWeapon = null;
+    });
   }
 
   void _addItem(int index) {
@@ -211,29 +274,45 @@ class PlayForgingState extends State<PlayForgingScreen> {
       tmpMaterialsNum[fid] = ftn + fsn;
     }
 
-    setState(() {});
+    setState(() {
+      _selectedWeapon = null;
+    });
   }
 
-  void _startAlchemy(BuildContext context, WeaponModel weapon) async {
+  void _startAlchemy(
+    BuildContext context,
+    WeaponModel weapon,
+    MaterialModel mm,
+  ) async {
     setState(() {
       _loading = true;
     });
-    final name = '';
-    final pos = 1;
+    final name = _weaponsItems[_selectedWeapon]?.name ?? '';
+    final pos = _weaponsItems[_selectedWeapon]?.pos ?? 1;
 
     final res = await weapon.create(selectedMaterialsNum, name, pos);
 
     _loading = false;
     if (res) {
+      mm.weaponUsed(selectedMaterialsNum);
+      successCallback();
       // success
     }
+  }
+
+  void successCallback() {
+    setState(() {
+      selectedMaterialsNum.clear();
+      selectedMaterialsIds.clear();
+    });
   }
 }
 
 class CreateCharacterDialog extends StatefulWidget {
   final Map<int, int> materials;
+  final Function callback;
 
-  const CreateCharacterDialog(this.materials, {super.key});
+  const CreateCharacterDialog(this.materials, this.callback, {super.key});
 
   @override
   CreateCharacterDialogState createState() => CreateCharacterDialogState();
@@ -278,7 +357,14 @@ class CreateCharacterDialogState extends State<CreateCharacterDialog> {
 
     _loading = false;
     if (res) {
-      if (context.mounted) Navigator.of(context).pop();
+      setState(() {
+        _error = '成功放入背包！';
+      });
+      widget.callback();
+      if (context.mounted) context.read<MaterialModel>().weaponUsed(widget.materials);
+      Future.delayed(Duration(seconds: 1), () {
+        if (context.mounted) Navigator.of(context).pop();
+      });
     } else {
       setState(() {
         _error = "Failure";

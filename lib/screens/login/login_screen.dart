@@ -1,3 +1,4 @@
+import 'package:boundless_immortality/common/token.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -34,8 +35,8 @@ class LoginState extends State<LoginScreen> {
     final settingsController = context.watch<SettingsController>();
     final audioController = context.watch<AudioController>();
 
-    _email.text = 'qq@bi3.me';
-    _password.text = 'qqq123';
+    // _email.text = 'qq@bi3.me';
+    // _password.text = 'qqq123';
 
     return Scaffold(
       backgroundColor: Colors.transparent,

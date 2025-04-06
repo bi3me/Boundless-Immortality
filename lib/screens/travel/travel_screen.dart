@@ -78,8 +78,8 @@ class PlayTravelState extends State<PlayTravelScreen> {
                                 textAlign: TextAlign.center,
                               ),
                             ),
-                          )
-                        ]
+                          ),
+                        ],
                       )
                       : ListView.builder(
                         itemCount: history.length,
@@ -95,8 +95,12 @@ class PlayTravelState extends State<PlayTravelScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: Text(history[index].material ? '有发现' : ''),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0,
+                                    ),
+                                    child: Text(
+                                      history[index].material ? '有发现' : '',
+                                    ),
                                   ),
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
@@ -118,7 +122,7 @@ class PlayTravelState extends State<PlayTravelScreen> {
                                     },
                                     child: Text('闯入'),
                                   ),
-                                ]
+                                ],
                               ),
                             ),
                           );
@@ -132,7 +136,7 @@ class PlayTravelState extends State<PlayTravelScreen> {
               _traveling || !travel.avaiable()
                   ? null
                   : () => startTravel(context, travel),
-          child: const Text('随机游历'),
+                  child: Text(travel.avaiable() ? '随机游历' : '今日次数已用完'),
         ),
       ),
     );
@@ -218,9 +222,9 @@ class CreateMineDialogState extends State<CreateMineDialog> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Text(_error ?? '')
+            child: Text(_error ?? ''),
           ),
-        ]
+        ],
       ),
       actions: [
         TextButton(
@@ -262,10 +266,13 @@ class CreateTravelDialogState extends State<CreateTravelDialog> {
       setState(() {
         _info = '成功放入背包！';
       });
+      Future.delayed(Duration(seconds: 1), () {
+        if (context.mounted) Navigator.of(context).pop();
+      });
     } else {
       setState(() {
         _loading = false;
-        _info = '打斗失败！';
+        _info = '打斗失败或已被领取！';
       });
     }
   }

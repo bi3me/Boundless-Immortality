@@ -68,7 +68,7 @@ class SetupState extends State<SetupScreen> {
                       controller: _birthday,
                       decoration: InputDecoration(
                         border: UnderlineInputBorder(),
-                        labelText: '生辰八字',
+                        labelText: '生辰八字 (不保存)',
                         hintText: '2025-01-30',
                       ),
                     ),
@@ -76,7 +76,7 @@ class SetupState extends State<SetupScreen> {
                   FilledButton(
                     onPressed: () {
                       setState(() {
-                        _attribute = 1; // TODO
+                        _attribute = calculateAttribute(_birthday.text);
                       });
                     },
                     child: const Text('阴阳五行测灵根'),
@@ -87,7 +87,7 @@ class SetupState extends State<SetupScreen> {
                       child: Text(
                         attributes[(_attribute ?? 0) + 1],
                         style: TextStyle(
-                          color: attributeColors[(_attribute??0) +1],
+                          color: attributeColors[(_attribute ?? 0) + 1],
                           fontSize: 40,
                         ),
                       ),
