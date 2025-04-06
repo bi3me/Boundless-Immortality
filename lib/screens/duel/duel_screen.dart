@@ -94,7 +94,7 @@ class PlayDuelState extends State<PlayDuelScreen> {
         final isMy = items[index].player == user.id;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 4),
-          color: isMe ? attributeColors[user.attribute] : Color(0xBFCCCCD6),
+          color: isMe ? attributeColors[user.attribute] : Color(0xBFADA595),
           child: ListTile(
             title: Text(isMy ? '我的擂台' : items[index].name),
             subtitle: Text(
@@ -132,7 +132,7 @@ class PlayDuelState extends State<PlayDuelScreen> {
         final bool win = items[index].win ?? false;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 4),
-          color: win ? attributeColors[attribute] : Color(0xBFCCCCD6),
+          color: win ? attributeColors[attribute] : Color(0xBFADA595),
           child: ListTile(
             title: Text(win ? '胜利' : '失败'),
             trailing: Text("${items[index].coin} 灵石"),

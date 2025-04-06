@@ -254,7 +254,7 @@ class PlayState extends State<PlayScreen> {
           height: 100,
           padding: EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Color(0xBFCCCCD6),
+            color: Color(0xBFADA595),
             borderRadius: BorderRadius.circular(4),
           ),
           child: ListView(

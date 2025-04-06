@@ -67,7 +67,7 @@ class PlayTravelState extends State<PlayTravelScreen> {
                               height: 80,
                               padding: const EdgeInsets.all(4.0),
                               decoration: BoxDecoration(
-                                color: Color(0xBFCCCCD6),
+                                color: Color(0xBFADA595),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(

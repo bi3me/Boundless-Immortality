@@ -317,7 +317,7 @@ class MyApp extends StatelessWidget {
                 ),
                 elevatedButtonTheme: ElevatedButtonThemeData(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xBFCCCCD6),
+                    backgroundColor: Color(0xBFADA595),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.zero,
                     shape: RoundedRectangleBorder(
@@ -326,20 +326,20 @@ class MyApp extends StatelessWidget {
                   ),
                 ),
                 dialogTheme: DialogTheme(
-                  backgroundColor: Color(0xBFCCCCD6),
+                  backgroundColor: Color(0xBFADA595),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(4.0)),
                   ),
                 ),
                 cardTheme: CardTheme(
-                  color: Color(0xBFCCCCD6),
+                  color: Color(0xBFADA595),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                 ),
                 segmentedButtonTheme: SegmentedButtonThemeData(
                   style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(Color(0xBFCCCCD6)),
+                    backgroundColor: WidgetStateProperty.all(Color(0xBFADA595)),
                     shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4.0),

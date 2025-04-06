@@ -63,8 +63,11 @@ class LoginState extends State<LoginScreen> {
             Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: Color(0xBFCCCCD6),
-                borderRadius: BorderRadius.circular(4)
+                color: Color(0xBFADA595),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              constraints: BoxConstraints(
+                maxWidth: 400,
               ),
               child: Form(
                 key: _formKey,
@@ -130,16 +133,26 @@ class LoginState extends State<LoginScreen> {
                         },
                       ),
                     ),
+                    _gap,
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: () => _submit(context),
+                              child: Text(_isLoading ? '准备中' : '踏上仙途'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
             _gap,
-            _gap,
-            FilledButton(
-              onPressed: () => _submit(context),
-              child: Text(_isLoading ? '准备中' : '踏上仙途'),
-            ),
             _gap,
             TextButton(
               onPressed: () => GoRouter.of(context).push('/settings'),

@@ -48,9 +48,10 @@ class SetupState extends State<SetupScreen> {
               child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: Color(0xBFCCCCD6),
+                color: Color(0xBFADA595),
                 borderRadius: BorderRadius.circular(4)
               ),
+              constraints: BoxConstraints(maxWidth: 400),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -130,20 +131,44 @@ class SetupState extends State<SetupScreen> {
                           );
                         }).toList(),
                   ),
-                  Container(
-                    // height: 100,
-                    padding: EdgeInsets.all(10),
+                  Expanded(
                     child: Text(''),
                   ),
-                ],
+                  SafeArea(
+                      top: false,
+                      maintainBottomViewPadding: true,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: ElevatedButton(
+                                onPressed: () => GoRouter.of(context).pop(),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.home),
+                                    Icon(Icons.chevron_left),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () => _submit(context),
+                                child: Text(_isLoading ? '准备中' : '开始'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            ),
           ],
-        ),
-        rectangularMenuArea: FilledButton(
-          onPressed: () => _submit(context),
-          child: Text(_isLoading ? '准备中' : '开始'),
         ),
       ),
     );

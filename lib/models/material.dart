@@ -165,7 +165,7 @@ class MaterialItemWidget extends StatelessWidget {
               lock
                   ? Color(0x40CCCCD6)
                   : (attribute != 0
-                      ? (number == 0 ? Color(0x40CCCCD6) : Color(0xBFCCCCD6))
+                      ? (number == 0 ? Color(0x40CCCCD6) : Color(0xBFADA595))
                       : Colors.white),
           border: Border.all(color: Colors.black),
           borderRadius: BorderRadius.circular(4),
