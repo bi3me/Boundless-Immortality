@@ -53,7 +53,7 @@ const List<String> weaponPos = [
 ];
 
 const List<Color> attributeColors = [
-  Color(0xFFCCCCD6), // ''
+  Color(0xFF5A5646), // ''
   Color(0xFFFBDA41), // '金',
   Color(0xFF1BA784), // '木',
   Color(0xFF2775b6), // '水',
