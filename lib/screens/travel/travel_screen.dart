@@ -311,7 +311,7 @@ class CreateTravelDialogState extends State<CreateTravelDialog> {
           child: Text('取消'),
         ),
         ElevatedButton(
-          onPressed: _loading ? null : () => _submitData(context),
+          onPressed: _loading || widget.material == null ? null : () => _submitData(context),
           child: Text(_loading ? '进行中' : '拿下'),
         ),
       ],

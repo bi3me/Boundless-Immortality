@@ -45,6 +45,12 @@ class SetupState extends State<SetupScreen> {
             ),
             const SizedBox(height: 50),
             Expanded(
+              child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Color(0xBFCCCCD6),
+                borderRadius: BorderRadius.circular(4)
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
@@ -131,6 +137,7 @@ class SetupState extends State<SetupScreen> {
                   ),
                 ],
               ),
+            ),
             ),
           ],
         ),

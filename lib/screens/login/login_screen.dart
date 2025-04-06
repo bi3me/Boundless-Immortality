@@ -60,70 +60,78 @@ class LoginState extends State<LoginScreen> {
         rectangularMenuArea: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25),
-                    child: TextFormField(
-                      controller: _email,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        border: UnderlineInputBorder(),
-                        labelText: 'Email',
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Not empty';
-                        }
-                        final emailRegex = RegExp(
-                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                        );
-                        if (!emailRegex.hasMatch(value)) {
-                          return 'Not email address';
-                        }
-                        if (value.length > 50) {
-                          return 'Too long, <= 50';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25),
-                    child: TextFormField(
-                      controller: _password,
-                      keyboardType: TextInputType.text,
-                      obscureText: _isPasswordHidden,
-                      decoration: InputDecoration(
-                        border: UnderlineInputBorder(),
-                        labelText: 'Password',
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordHidden
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordHidden = !_isPasswordHidden;
-                            });
-                          },
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: Color(0xBFCCCCD6),
+                borderRadius: BorderRadius.circular(4)
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25),
+
+                      child: TextFormField(
+                        controller: _email,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          border: UnderlineInputBorder(),
+                          labelText: 'Email',
                         ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Not empty';
+                          }
+                          final emailRegex = RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          );
+                          if (!emailRegex.hasMatch(value)) {
+                            return 'Not email address';
+                          }
+                          if (value.length > 50) {
+                            return 'Too long, <= 50';
+                          }
+                          return null;
+                        },
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Not empty';
-                        }
-                        if (value.length < 6) {
-                          return 'Too smaill, >= 6';
-                        }
-                        return null;
-                      },
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                      child: TextFormField(
+                        controller: _password,
+                        keyboardType: TextInputType.text,
+                        obscureText: _isPasswordHidden,
+                        decoration: InputDecoration(
+                          border: UnderlineInputBorder(),
+                          labelText: 'Password',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordHidden
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordHidden = !_isPasswordHidden;
+                              });
+                            },
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Not empty';
+                          }
+                          if (value.length < 6) {
+                            return 'Too smaill, >= 6';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             _gap,
