@@ -1,10 +1,7 @@
-import 'package:boundless_immortality/common/token.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../common/audio/audio_controller.dart';
-import '../../common/audio/sounds.dart';
 import '../settings/settings.dart';
 import '../style/responsive_screen.dart';
 import '../../models/user.dart';
@@ -22,6 +19,7 @@ class LoginState extends State<LoginScreen> {
   final TextEditingController _password = TextEditingController();
   bool _isPasswordHidden = true;
   bool _isLoading = false;
+  String _error = '';
 
   @override
   void dispose() {
@@ -33,10 +31,6 @@ class LoginState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final settingsController = context.watch<SettingsController>();
-    final audioController = context.watch<AudioController>();
-
-    // _email.text = 'qq@bi3.me';
-    // _password.text = 'qqq123';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -50,7 +44,7 @@ class LoginState extends State<LoginScreen> {
               '自在修仙！',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Permanent Marker',
+                color: Color(0xBFADA595),
                 fontSize: 50,
                 height: 1,
               ),
@@ -66,16 +60,13 @@ class LoginState extends State<LoginScreen> {
                 color: Color(0xBFADA595),
                 borderRadius: BorderRadius.circular(4),
               ),
-              constraints: BoxConstraints(
-                maxWidth: 400,
-              ),
+              constraints: BoxConstraints(maxWidth: 400),
               child: Form(
                 key: _formKey,
                 child: Column(
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25),
-
                       child: TextFormField(
                         controller: _email,
                         keyboardType: TextInputType.emailAddress,
@@ -134,6 +125,7 @@ class LoginState extends State<LoginScreen> {
                       ),
                     ),
                     _gap,
+                    Text(_error, style: TextStyle(color: Colors.red)),
                     Padding(
                       padding: const EdgeInsets.all(10),
                       child: Row(
@@ -155,8 +147,8 @@ class LoginState extends State<LoginScreen> {
             _gap,
             _gap,
             TextButton(
-              onPressed: () => GoRouter.of(context).push('/settings'),
-              child: const Text('迷失方向了？'),
+              onPressed: () => GoRouter.of(context).push('/setup'),
+              child: const Text('创建新仙籍'),
             ),
             _gap,
             Padding(
@@ -183,23 +175,19 @@ class LoginState extends State<LoginScreen> {
   static const _gap = SizedBox(height: 10);
 
   Future<void> _submit(BuildContext context) async {
-    setState(() {
-      _isLoading = true;
-    });
-
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       if (await context.read<UserModel>().login(_email.text, _password.text)) {
         if (context.mounted) GoRouter.of(context).go('/play');
       } else {
-        if (context.mounted)
-          GoRouter.of(
-            context,
-          ).push('/setup', extra: (_email.text, _password.text));
+        setState(() {
+          _isLoading = false;
+          _error = '账号或密码错误！';
+        });
       }
     }
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 }

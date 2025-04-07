@@ -1,3 +1,4 @@
+import 'package:boundless_immortality/common/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -280,6 +281,7 @@ class CreateTravelDialogState extends State<CreateTravelDialog> {
   @override
   Widget build(BuildContext context) {
     final mname = widget.material?.name ?? '无';
+    final power = widget.item.ttype == 1 ? '不详' : levels[widget.item.power];
     return AlertDialog(
       title: Text('神秘之地'),
       content: SingleChildScrollView(
@@ -299,7 +301,7 @@ class CreateTravelDialogState extends State<CreateTravelDialog> {
             ),
             Text("发现了: $mname"),
             const SizedBox(height: 4.0),
-            Text("对方战力: ${widget.item.power}"),
+            Text("对方等级: $power"),
             const SizedBox(height: 10.0),
             Text(_info, style: TextStyle(color: Colors.blue)),
           ],

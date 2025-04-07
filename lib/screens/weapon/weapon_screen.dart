@@ -47,7 +47,7 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
           onPressed: () {
             GoRouter.of(context).go('/play');
           },
-          child: const Text('生成形象（付费）'),
+          child: const Text('生成形象（100灵石）'),
         ),
       ),
     );

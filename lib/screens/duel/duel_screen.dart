@@ -36,7 +36,7 @@ class PlayDuelState extends State<PlayDuelScreen> {
 
     final widgets = [
       _showActivedDuel(items, duel, user),
-      _showHistoryDuel(duel.history.values.toList(), user.attribute),
+      _showHistoryDuel(duel.history.values.toList()),
     ];
 
     return Scaffold(
@@ -94,7 +94,7 @@ class PlayDuelState extends State<PlayDuelScreen> {
         final isMy = items[index].player == user.id;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 4),
-          color: isMe ? attributeColors[user.attribute] : Color(0xBFADA595),
+          color: isMe ? Color(0xFFADA595) : Color(0xBFADA595),
           child: ListTile(
             title: Text(isMy ? '我的擂台' : items[index].name),
             subtitle: Text(
@@ -125,14 +125,14 @@ class PlayDuelState extends State<PlayDuelScreen> {
     );
   }
 
-  Widget _showHistoryDuel(List<DuelItem> items, int attribute) {
+  Widget _showHistoryDuel(List<DuelItem> items) {
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, index) {
         final bool win = items[index].win ?? false;
         return Card(
           margin: EdgeInsets.symmetric(vertical: 4),
-          color: win ? attributeColors[attribute] : Color(0xBFADA595),
+          color: win ? Color(0xFFADA595) : Color(0xBFADA595),
           child: ListTile(
             title: Text(win ? '胜利' : '失败'),
             trailing: Text("${items[index].coin} 灵石"),

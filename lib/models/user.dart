@@ -26,11 +26,16 @@ class UserModel extends ChangeNotifier {
   int mate = 0;
   DateTime nextMate = DateTime.now();
   String? avatar;
+  bool newRegister = false;
 
   Widget detailPage = SizedBox.shrink();
 
   void clear() {
     detailPage = SizedBox.shrink();
+  }
+
+  void closeNewRegister() {
+    newRegister = false;
   }
 
   void router(BuildContext context, String path) {
@@ -143,6 +148,7 @@ class UserModel extends ChangeNotifier {
     } else {
       await TokenManager.saveToken(data['token']);
       update(data['user']);
+      newRegister = true;
       return true;
     }
   }

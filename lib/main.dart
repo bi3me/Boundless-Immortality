@@ -142,16 +142,11 @@ class MyApp extends StatelessWidget {
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) {
-        return const LoginScreen(key: Key('login'));
-      },
+      builder: (context, state) => const LoginScreen(key: Key('login')),
     ),
     GoRoute(
       path: '/setup',
-      builder: (context, state) {
-        final (email, password) = state.extra as (String, String);
-        return SetupScreen(email: email, password: password, key: Key('setup'));
-      },
+      builder: (context, state) => const SetupScreen(key: Key('setup')),
     ),
     GoRoute(
       path: '/settings',

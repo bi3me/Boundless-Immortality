@@ -49,6 +49,7 @@ class PlayScreen extends StatefulWidget {
 
 class PlayState extends State<PlayScreen> {
   Timer? _timer;
+  bool _showing = false;
 
   void _startDelayedTask() {
     // 10min settle once
@@ -73,6 +74,12 @@ class PlayState extends State<PlayScreen> {
   Widget build(BuildContext context) {
     final user = context.watch<UserModel>();
     final broadcasts = context.watch<BroadcastModel>().items;
+    if (!_showing && user.newRegister) {
+      _showing = true;
+      Future.delayed(Duration(seconds: 1), () {
+        _showNewRegister();
+      });
+    }
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -114,9 +121,17 @@ class PlayState extends State<PlayScreen> {
     return Row(
       children: [
         CircleAvatar(
-          radius: 40,
-          backgroundImage: AssetImage("assets/icon/icon.jpg"),
-          // backgroundImage: AssetImage("assets/logo.png"), // 头像
+          radius: 26,
+          backgroundColor: attributeColors[user.attribute],
+          child: Text(
+            attributes[user.attribute],
+            style: TextStyle(
+              color: attributeFontColors[user.attribute],
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          // backgroundImage: AssetImage("assets/icon/icon.jpg"),
         ),
         SizedBox(width: 20),
         Text(
@@ -158,7 +173,8 @@ class PlayState extends State<PlayScreen> {
                   '升级',
                   style: TextStyle(
                     fontSize: 12,
-                    color: attributeColors[user.attribute],
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -181,14 +197,14 @@ class PlayState extends State<PlayScreen> {
       children: [
         _buildStatItem("加速", user.levelUp),
         _buildStatItem("战力", user.power),
-        _buildStatItem("仙石", user.coin),
+        _buildStatItem("灵石", user.coin),
         Column(
           children: [
             Text(
               attributes[user.attribute],
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            Text('灵根', style: TextStyle(color: Colors.grey)),
+            Text('灵根'),
           ],
         ),
       ],
@@ -200,9 +216,9 @@ class PlayState extends State<PlayScreen> {
       children: [
         Text(
           "$value",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
-        Text(label, style: TextStyle(color: Colors.grey)),
+        Text(label),
       ],
     );
   }
@@ -262,6 +278,37 @@ class PlayState extends State<PlayScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showNewRegister() {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('新手介绍'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('开启你的自在修仙之旅！'),
+                Text('在这里你可以自由炼制丹药，武器，功法，决斗。自由分配各种技能点！使用 <游历> 功能去探索副本，获取资源！'),
+                const SizedBox(height: 10),
+                Text('新注册的奖励的灵石和资源已到账！'),
+              ],
+            ),
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                context.read<UserModel>().closeNewRegister();
+                Navigator.of(context).pop();
+              },
+              child: Text('确认'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
