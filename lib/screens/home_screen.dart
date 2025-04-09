@@ -232,7 +232,7 @@ class PlayState extends State<PlayScreen> {
       ('炼器', 'forging'),
       ('决斗', 'duel'),
       //('好友', 'friend'),
-      //('道侣', 'mate'),
+      //('测试', 'mate'),
       ('坊市', 'market'),
     ];
     return GridView.builder(
