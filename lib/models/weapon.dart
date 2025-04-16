@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 
 import 'user.dart';
+import 'material.dart';
 import '../common/auth_http.dart';
 
 const int weaponEveryLevelMax = 20;
 
 class WeaponItem {
-  final int weaponId;
+  final int id;
   final String name;
   final int attribute;
   final int level;
@@ -17,16 +18,13 @@ class WeaponItem {
   final int powerHit;
   final int powerDodge;
   final String material;
-  final int? nftOwner;
-  final String? nftName;
   int number;
   bool working;
+  bool locking;
 
   WeaponItem(
-    this.weaponId,
+    this.id,
     this.name,
-    this.working,
-    this.number,
     this.attribute,
     this.level,
     this.pos,
@@ -36,8 +34,9 @@ class WeaponItem {
     this.powerHit,
     this.powerDodge,
     this.material,
-    this.nftOwner,
-    this.nftName,
+    this.number,
+    this.working,
+    this.locking,
   );
 
   Map<int, int> materials() {
@@ -83,41 +82,60 @@ class WeaponModel extends ChangeNotifier {
   List<(int, String)> availableForSale() {
     List<(int, String)> list = [];
     items.forEach((_, v) {
-      if (v.nftOwner != null &&
-          ((v.number > 1 && v.working) || (v.number > 0 && !v.working))) {
-        list.add((v.weaponId, v.nftName ?? v.name));
+      if (!v.locking && (v.working && v.number > 1) ||
+          (!v.working && v.number > 0)) {
+        list.add((v.id, v.name));
       }
     });
 
     return list;
   }
 
-  Future<void> change(int pos, int weaponId, UserModel user) async {
-    if (items[weaponId]?.pos != pos) {
+  Future<void> change(int pos, int id, UserModel user) async {
+    if (items[id]?.pos != pos) {
       return;
     }
 
-    items[weaponId]?.working = true;
-    items[poses[pos]?[0]]?.working = false;
-
-    poses[pos]?.remove(weaponId);
-    poses[pos]?.insert(0, weaponId);
-
     // send to service
     final response = await AuthHttpClient().post(
-      AuthHttpClient.uri("users/weapons-wear/$weaponId"),
+      AuthHttpClient.uri("users/weapons-wear/$id"),
     );
 
     final data = AuthHttpClient.res(response);
     if (data == null) {
       // none
     } else {
+      items[poses[pos]?[0]]?.working = false;
+      items[id]?.working = true;
+
+      poses[pos]?.remove(id);
+      poses[pos]?.insert(0, id);
+
       user.update(data); // update user
       notifyListeners();
     }
   }
 
-  Future<bool> create(Map<int, int> materials, String name, int pos) async {
+  Future<void> unlock(int id, UserModel user) async {
+    // send to service
+    final response = await AuthHttpClient().post(
+      AuthHttpClient.uri("users/weapons-unlock/$id"),
+    );
+
+    final data = AuthHttpClient.res(response);
+    if (data != null) {
+      items[id]?.locking = false;
+      user.settle();
+      notifyListeners();
+    }
+  }
+
+  Future<bool> create(
+    Map<int, int> materials,
+    String name,
+    int pos,
+    MaterialModel mm,
+  ) async {
     final materialsZip = WeaponItem.materialsZip(materials);
     final response = await AuthHttpClient().post(
       AuthHttpClient.uri('users/weapons'),
@@ -133,6 +151,7 @@ class WeaponModel extends ChangeNotifier {
       return false;
     } else {
       fromNetwork(data);
+      mm.weaponUsed(materials);
       notifyListeners();
       return true;
     }
@@ -140,10 +159,8 @@ class WeaponModel extends ChangeNotifier {
 
   /// Update user data from network (fully info)
   void fromNetwork(Map<String, dynamic> item) {
-    final weaponId = item['weapon_id'];
+    final id = item['id'];
     final name = item['name'];
-    final working = item['working'];
-    final number = item['num'];
     final attribute = item['attribute'];
     final level = item['level'];
     final pos = item['pos'];
@@ -153,14 +170,13 @@ class WeaponModel extends ChangeNotifier {
     final powerHit = item['power_hit'];
     final powerDodge = item['power_dodge'];
     final material = item['materials'];
-    final nftOwner = item['nft_owner'];
-    final nftName = item['nft_name'];
+    final number = item['num'];
+    final working = item['working'];
+    final locking = item['locking'];
 
-    items[weaponId] = WeaponItem(
-      weaponId,
+    items[id] = WeaponItem(
+      id,
       name,
-      working,
-      number,
       attribute,
       level,
       pos,
@@ -170,16 +186,17 @@ class WeaponModel extends ChangeNotifier {
       powerHit,
       powerDodge,
       material,
-      nftOwner,
-      nftName,
+      number,
+      working,
+      locking,
     );
 
-    final has = poses[pos]?.contains(weaponId) ?? false;
+    final has = poses[pos]?.contains(id) ?? false;
     if (!has) {
       if (poses[pos] == null) {
-        poses[pos] = [weaponId];
+        poses[pos] = [id];
       } else {
-        poses[pos]?.add(weaponId);
+        poses[pos]?.add(id);
       }
     }
 
@@ -192,15 +209,15 @@ class WeaponModel extends ChangeNotifier {
   }
 
   /// Loading kungfus
-  Future<void> load() async {
-    if (items.isEmpty) {
+  Future<void> load(bool force) async {
+    if (force || items.isEmpty) {
       final response = await AuthHttpClient().get(
         AuthHttpClient.uri('users/weapons'),
       );
 
       final data = AuthHttpClient.res(response);
       if (data != null) {
-        poses.clear();
+        clear();
         for (var item in data['data']) {
           fromNetwork(item);
         }

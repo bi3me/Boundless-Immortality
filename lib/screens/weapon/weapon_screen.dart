@@ -26,28 +26,29 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
         squarishMainArea: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(8, (index) {
-              final pos = index + 1;
-              final posList = weapon.poses[pos] ?? [0];
-              final first = weapon.items[posList[0]];
-              final isWorking = first?.working ?? false;
-              final firstname = isWorking ? first?.name : '';
-              return Card(
-                margin: EdgeInsets.symmetric(vertical: 4),
-                child: ExpansionTile(
-                  title: Text("${weaponPos[pos]}: $firstname"),
-                  trailing: Text(levels[first?.level ?? 0]),
-                  children: _buildOtherSkills(posList, weapon, user),
-                ),
-              );
-            }),
+            children: [
+              Text(
+                "装备 (解锁需 $unlockCoin 灵石)",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              ...List.generate(8, (index) {
+                final pos = index + 1;
+                final posList = weapon.poses[pos] ?? [0];
+                final first = weapon.items[posList[0]];
+                final isWorking = first?.working ?? false;
+                final firstname = isWorking ? first?.name : '';
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                  child: ExpansionTile(
+                    title: Text("${weaponPos[pos]}: $firstname"),
+                    trailing: Text(levels[first?.level ?? 0]),
+                    children: _buildOtherSkills(posList, weapon, user),
+                  ),
+                );
+              }),
+            ],
           ),
-        ),
-        rectangularMenuArea: FilledButton(
-          onPressed: () {
-            GoRouter.of(context).go('/play');
-          },
-          child: const Text('生成形象（100灵石）'),
         ),
       ),
     );
@@ -60,7 +61,7 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
   ) {
     return list.map((index) {
       final item = weapon.items[index];
-      final id = item?.weaponId ?? 0;
+      final id = item?.id ?? 0;
       final pos = item?.pos ?? 0;
       final working = item?.working ?? false;
       final hp = item?.powerHp ?? 0;
@@ -68,6 +69,7 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
       final defense = item?.powerDefense ?? 0;
       final hit = item?.powerHit ?? 0;
       final dodge = item?.powerDodge ?? 0;
+      final number = item?.number ?? 0;
 
       return ListTile(
         title: Text(item?.name ?? ''),
@@ -75,15 +77,43 @@ class PlayWeaponState extends State<PlayWeaponScreen> {
             item != null
                 ? Text('生命+$hp, 攻击+$attack, 防御+$defense, 暴击+$hit, 闪避+$dodge')
                 : null,
-        trailing:
-            item != null && !working
-                ? ElevatedButton(
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("$number"),
+            if (item?.locking ?? false)
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: ElevatedButton(
                   onPressed: () async {
-                    await weapon.change(pos, id, user);
+                    await weapon.unlock(id, user);
                   },
+                  child: Text('解锁'),
+                ),
+              ),
+            if (item != null && !working)
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: attributeColors[user.attribute],
+                    foregroundColor: attributeFontColors[user.attribute],
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                    ),
+                  ),
+                  onPressed:
+                      number > 0
+                          ? () async {
+                            await weapon.change(pos, id, user);
+                          }
+                          : null,
                   child: Text("穿戴"),
-                )
-                : null,
+                ),
+              ),
+          ],
+        ),
       );
     }).toList();
   }

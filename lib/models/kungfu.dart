@@ -6,34 +6,26 @@ import '../models/user.dart';
 const int kungfuEveryLevelMax = 2;
 
 class KungfuItem {
-  final int kungfuId;
+  final int id;
   final String name;
   final int attribute;
-  final int identity;
   final int level;
-  final int? nftOwner;
-  final String? nftName;
-  final int? nftAttribute;
+  final int powers;
   bool working;
-  int number;
-
-  int get myattribute => nftAttribute ?? attribute;
+  bool locking;
 
   KungfuItem(
-    this.kungfuId,
+    this.id,
     this.name,
     this.attribute,
-    this.working,
-    this.number,
-    this.identity,
     this.level,
-    this.nftOwner,
-    this.nftName,
-    this.nftAttribute,
+    this.powers,
+    this.working,
+    this.locking,
   );
 
-  (int, int, int, int, int) powers() {
-    final (d1, r1) = (identity ~/ 100000000, identity % 100000000);
+  (int, int, int, int, int) getPowers() {
+    final (d1, r1) = (powers ~/ 100000000, powers % 100000000);
     final (d2, r2) = (r1 ~/ 1000000, r1 % 1000000);
     final (d3, r3) = (r2 ~/ 10000, r2 % 10000);
     final (d4, d5) = (r3 ~/ 100, r3 % 100);
@@ -90,30 +82,43 @@ class KungfuModel extends ChangeNotifier {
   List<(int, String)> availableForSale() {
     List<(int, String)> list = [];
     items.forEach((_, v) {
-      if (v.nftOwner != null &&
-          ((v.number > 1 && v.working) || (v.number > 0 && !v.working))) {
-        list.add((v.kungfuId, v.nftName ?? v.name));
+      if (!v.locking) {
+        list.add((v.id, v.name));
       }
     });
 
     return list;
   }
 
-  Future<void> change(int kungfuId, UserModel user) async {
+  Future<void> change(int id, UserModel user) async {
     // send to service
     final response = await AuthHttpClient().post(
-      AuthHttpClient.uri("users/kungfus-change/$kungfuId"),
+      AuthHttpClient.uri("users/kungfus-change/$id"),
     );
 
     final data = AuthHttpClient.res(response);
     if (data != null) {
       items[nowWorking]?.working = false;
-      items[kungfuId]?.working = true;
-      nowWorking = kungfuId;
+      items[id]?.working = true;
+      nowWorking = id;
 
       // data is user
       user.update(data);
 
+      notifyListeners();
+    }
+  }
+
+  Future<void> unlock(int id, UserModel user) async {
+    // send to service
+    final response = await AuthHttpClient().post(
+      AuthHttpClient.uri("users/kungfus-unlock/$id"),
+    );
+
+    final data = AuthHttpClient.res(response);
+    if (data != null) {
+      items[id]?.locking = false;
+      user.settle();
       notifyListeners();
     }
   }
@@ -150,31 +155,26 @@ class KungfuModel extends ChangeNotifier {
 
   /// Update user data from network (fully info)
   void fromNetwork(Map<String, dynamic> item) {
-    final kungfuId = item['kungfu_id'];
+    final id = item['id'];
     final name = item['name'];
     final attribute = item['attribute'];
-    final working = item['working'];
-    final number = item['num'];
-    final identity = item['identity'];
     final level = item['level'];
-    final nftOwner = item['nft_owner'];
-    final nftName = item['nft_name'];
-    final nftAttribute = item['nft_attribute'];
+    final powers = item['powers'];
+    final working = item['working'];
+    final locking = item['locking'];
+
     if (working) {
-      nowWorking = kungfuId;
+      nowWorking = id;
     }
 
-    items[kungfuId] = KungfuItem(
-      kungfuId,
+    items[id] = KungfuItem(
+      id,
       name,
       attribute,
-      working,
-      number,
-      identity,
       level,
-      nftOwner,
-      nftName,
-      nftAttribute,
+      powers,
+      working,
+      locking,
     );
 
     final count = countByLevel[level] ?? 0;
@@ -186,14 +186,15 @@ class KungfuModel extends ChangeNotifier {
   }
 
   /// Loading kungfus
-  Future<void> load() async {
-    if (items.isEmpty) {
+  Future<void> load(bool force) async {
+    if (force || items.isEmpty) {
       final response = await AuthHttpClient().get(
         AuthHttpClient.uri('users/kungfus'),
       );
 
       final data = AuthHttpClient.res(response);
       if (data != null) {
+        clear();
         for (var item in data['data']) {
           fromNetwork(item);
         }

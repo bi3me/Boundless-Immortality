@@ -89,8 +89,8 @@ class PlayBagState extends State<PlayBagScreen> {
             defense,
             hit,
             dodge,
-            "回收",
-            _recycle,
+            false,
+            null,
           ),
           false,
         );
@@ -108,7 +108,7 @@ class PlayBagState extends State<PlayBagScreen> {
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
-        final id = items[index].elixirId;
+        final id = items[index].id;
         final name = items[index].name;
         final attribute = items[index].attribute;
         final number = items[index].number;
@@ -131,7 +131,7 @@ class PlayBagState extends State<PlayBagScreen> {
             items[index].powerDefense,
             items[index].powerHit,
             items[index].powerDodge,
-            "服下",
+            items[index].locking,
             _eat,
           ),
           false,
@@ -152,8 +152,8 @@ class PlayBagState extends State<PlayBagScreen> {
     int defense,
     int hit,
     int dodge,
-    String btn,
-    Function(BuildContext, int) callback,
+    bool locking,
+    Function(BuildContext, int)? callback,
   ) {
     showDialog(
       context: context,
@@ -172,12 +172,25 @@ class PlayBagState extends State<PlayBagScreen> {
               Text("防御: $defense"),
               Text("暴击: $hit"),
               Text("闪避: $dodge"),
+              const SizedBox(height: 10),
+              if (locking)
+              Text("解锁后可出售，解锁需 $unlockCoin 灵石。", style: TextStyle(color: Colors.red)),
             ],
           ),
           actions: [
+            if (locking)
+            TextButton(
+              onPressed: () async {
+                final user = context.read<UserModel>();
+                await context.read<ElixirModel>().unlock(id, user);
+                if (context.mounted) Navigator.of(context).pop();
+              },
+              child: Text('解锁', style: TextStyle(color: Colors.red)),
+            ),
+            if (callback != null)
             TextButton(
               onPressed: () => callback(context, id),
-              child: Text(btn, style: TextStyle(color: Colors.red)),
+              child: Text('服下'),
             ),
             TextButton(
               onPressed: () {
@@ -194,11 +207,6 @@ class PlayBagState extends State<PlayBagScreen> {
   void _eat(BuildContext context, int id) {
     final user = context.read<UserModel>();
     context.read<ElixirModel>().eat(id, user);
-    Navigator.of(context).pop();
-  }
-
-  void _recycle(BuildContext context, int id) {
-    context.read<MaterialModel>().recycle(id);
     Navigator.of(context).pop();
   }
 }

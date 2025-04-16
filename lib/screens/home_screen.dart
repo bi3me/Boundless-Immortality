@@ -170,7 +170,7 @@ class PlayState extends State<PlayScreen> {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  '升级',
+                  '刷新',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,

@@ -27,7 +27,7 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "修炼功法",
+              "主修功法",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Card(
@@ -38,7 +38,7 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
                         title: Text(kungfu.working?.name ?? ''),
                         children: <Widget>[
                           Text(
-                            "${attributes[kungfu.working?.myattribute ?? 0]} 属性，最高可修炼至 ${levels[kungfu.working?.level ?? 0]} 境界",
+                            "${attributes[kungfu.working?.attribute ?? 0]} 属性，最高可修炼至 ${levels[kungfu.working?.level ?? 0]} 境界",
                           ),
                         ],
                       )
@@ -61,7 +61,7 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "所有功法",
+          "所有功法 (解锁需 $unlockCoin 灵石)",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 10),
@@ -73,18 +73,43 @@ class PlayKungfuState extends State<PlayKungfuScreen> {
                   margin: EdgeInsets.symmetric(vertical: 4),
                   child: ExpansionTile(
                     title: Text(item.name),
-                    trailing:
-                        item.working
-                            ? null
-                            : ElevatedButton(
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (item.locking)
+                          ElevatedButton(
+                            onPressed: () async {
+                              await kungfu.unlock(item.id, user);
+                            },
+                            child: Text('解锁'),
+                          ),
+                        if (!item.working)
+                        Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    attributeColors[user.attribute],
+                                foregroundColor:
+                                    attributeFontColors[user.attribute],
+                                padding: EdgeInsets.zero,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(4.0),
+                                  ),
+                                ),
+                              ),
                               onPressed: () async {
-                                await kungfu.change(item.kungfuId, user);
+                                await kungfu.change(item.id, user);
                               },
-                              child: Text(item.working ? "修炼中" : "改修"),
+                              child: Text('改修'),
                             ),
+                          ),
+                      ],
+                    ),
                     children: <Widget>[
                       Text(
-                        "${attributes[item.myattribute]} 属性，最高可修炼至 ${levels[item.level]} 境界",
+                        "${attributes[item.attribute]} 属性，最高可修炼至 ${levels[item.level]} 境界",
                       ),
                     ],
                   ),

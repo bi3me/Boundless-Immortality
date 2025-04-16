@@ -19,6 +19,15 @@ class DuelItem {
     this.challenger,
     this.win,
   );
+
+  bool isWin(int me) {
+    if (win != null) {
+      final rwin = win ?? false;
+      return (player == me && rwin) || (challenger == me && !rwin);
+    } else {
+      return false;
+    }
+  }
 }
 
 class ActivedDuelItem {
@@ -82,14 +91,17 @@ class DuelModel extends ChangeNotifier {
 
     final data = AuthHttpClient.res(response);
     if (data != null) {
+      print(data);
       if (data['win']) {
-        fromNetwork(data);
-
-        // update user data['user']
-        user.update(data['user']);
-
-        notifyListeners();
+        actives.remove(id);
       }
+
+      fromNetwork(data['duel']);
+
+      // update user data['user']
+      user.update(data['user']);
+
+      notifyListeners();
     }
   }
 

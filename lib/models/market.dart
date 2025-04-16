@@ -1,6 +1,11 @@
-import 'package:boundless_immortality/models/kungfu.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
+import 'material.dart';
+import 'kungfu.dart';
+import 'elixir.dart';
+import 'weapon.dart';
 import '../common/auth_http.dart';
 
 class MarketItem {
@@ -45,24 +50,34 @@ class MarketModel extends ChangeNotifier {
     }
   }
 
-  Future<void> buy(int mtype, int id) async {
+  Future<void> buy(int mtype, int id, BuildContext context) async {
     final response = await AuthHttpClient().post(
       AuthHttpClient.uri("users/market/$id"),
     );
 
     final data = AuthHttpClient.res(response);
     if (data != null) {
-      switch (mtype) {
-        case 1:
-          materials.remove(id);
-        case 2:
-          kungfus.remove(id);
-        case 3:
-          elixirs.remove(id);
-        case 4:
-          weapons.remove(id);
-        default:
-          break;
+      if (context.mounted) {
+        switch (mtype) {
+          case 1:
+            materials.remove(id);
+            context.read<MaterialModel>().load(true);
+            break;
+          case 2:
+            kungfus.remove(id);
+            context.read<KungfuModel>().load(true);
+            break;
+          case 3:
+            elixirs.remove(id);
+            context.read<ElixirModel>().load(true);
+            break;
+          case 4:
+            weapons.remove(id);
+            context.read<WeaponModel>().load(true);
+            break;
+          default:
+            break;
+        }
       }
       notifyListeners();
     }

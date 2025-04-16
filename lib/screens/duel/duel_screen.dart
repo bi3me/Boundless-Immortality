@@ -36,7 +36,7 @@ class PlayDuelState extends State<PlayDuelScreen> {
 
     final widgets = [
       _showActivedDuel(items, duel, user),
-      _showHistoryDuel(duel.history.values.toList()),
+      _showHistoryDuel(duel.history.values.toList(), user.id),
     ];
 
     return Scaffold(
@@ -67,14 +67,17 @@ class PlayDuelState extends State<PlayDuelScreen> {
           ],
         ),
         rectangularMenuArea: FilledButton(
-          onPressed: hasMy ? null : () {
-            showDialog(
-              context: context,
-              builder: (BuildContext dialogContext) {
-                return CreateDuelDialog();
-              },
-            );
-          },
+          onPressed:
+              hasMy
+                  ? null
+                  : () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext dialogContext) {
+                        return CreateDuelDialog();
+                      },
+                    );
+                  },
           child: const Text('摆擂'),
         ),
       ),
@@ -114,7 +117,12 @@ class PlayDuelState extends State<PlayDuelScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(horizontal: 8),
                     ),
-                    onPressed: () => duel.accept(id, user),
+                    onPressed: () async {
+                      await duel.accept(id, user);
+                      setState(() {
+                        _selectedIndex = 1;
+                      });
+                    },
                     child: Text('挑战'),
                   ),
               ],
@@ -125,16 +133,17 @@ class PlayDuelState extends State<PlayDuelScreen> {
     );
   }
 
-  Widget _showHistoryDuel(List<DuelItem> items) {
+  Widget _showHistoryDuel(List<DuelItem> items, int me) {
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, index) {
-        final bool win = items[index].win ?? false;
+        final bool win = items[index].isWin(me);
         return Card(
           margin: EdgeInsets.symmetric(vertical: 4),
-          color: win ? Color(0xFFADA595) : Color(0xBFADA595),
           child: ListTile(
-            title: Text(win ? '胜利' : '失败'),
+            title: Text(win ? '胜利' : '失败',
+              style: TextStyle(color: win ? Colors.white : Colors.black, fontStyle: FontStyle.italic)
+            ),
             trailing: Text("${items[index].coin} 灵石"),
           ),
         );
@@ -161,6 +170,10 @@ class CreateDuelDialogState extends State<CreateDuelDialog> {
   };
 
   void _submitData(BuildContext context) async {
+    if (_coinController.text.isEmpty) {
+      return;
+    }
+
     setState(() {
       _error = null;
     });

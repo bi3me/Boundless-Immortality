@@ -1,9 +1,9 @@
-import 'package:boundless_immortality/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../style/responsive_screen.dart';
+import '../../models/user.dart';
 import '../../models/elixir.dart';
 import '../../models/material.dart';
 import '../../common/constants.dart';
@@ -73,7 +73,9 @@ class PlayElixirState extends State<PlayElixirScreen> {
                           },
                         );
                   },
-          child: Text(_loading ? '炼丹中' : "炼丹 (${levels[myLevel]}剩 $availableTimes 次)"),
+          child: Text(
+            _loading ? '炼丹中' : "炼丹 (${levels[myLevel]}剩 $availableTimes 次)",
+          ),
         ),
       ),
     );
@@ -91,7 +93,7 @@ class PlayElixirState extends State<PlayElixirScreen> {
           onChanged: _selectElixir,
           items:
               _elixirsItems.values.map((item) {
-                final id = item.elixirId;
+                final id = item.id;
                 bool avaiable = true;
                 final itemMaterials = item.materials();
                 if (itemMaterials.length > myLevel) {
@@ -290,11 +292,11 @@ class PlayElixirState extends State<PlayElixirScreen> {
     final res = await elixirs.create(
       selectedMaterialsNum,
       _elixirsItems[_selectedElixir]?.name ?? '',
+      mm,
     );
 
     _loading = false;
     if (res) {
-      mm.elixirUsed(selectedMaterialsNum);
       successCallback();
       // success
     }
@@ -340,9 +342,11 @@ class CreateCharacterDialogState extends State<CreateCharacterDialog> {
       _loading = true;
     });
 
+    final mm = context.read<MaterialModel>();
     final res = await context.read<ElixirModel>().create(
       widget.materials,
       name,
+      mm
     );
 
     _loading = false;
@@ -351,7 +355,6 @@ class CreateCharacterDialogState extends State<CreateCharacterDialog> {
         _error = '成功放入背包！';
       });
       widget.callback();
-      if (context.mounted) context.read<MaterialModel>().elixirUsed(widget.materials);
       Future.delayed(Duration(seconds: 1), () {
         if (context.mounted) Navigator.of(context).pop();
       });

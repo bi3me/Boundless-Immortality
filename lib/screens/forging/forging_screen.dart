@@ -73,7 +73,9 @@ class PlayForgingState extends State<PlayForgingScreen> {
                           },
                         );
                   },
-          child: Text(_loading ? '炼制中' : "炼器 (${levels[myLevel]}剩 $availableTimes 次)"),
+          child: Text(
+            _loading ? '炼制中' : "炼器 (${levels[myLevel]}剩 $availableTimes 次)",
+          ),
         ),
       ),
     );
@@ -91,7 +93,7 @@ class PlayForgingState extends State<PlayForgingScreen> {
           onChanged: _selectWeapon,
           items:
               _weaponsItems.values.map((item) {
-                final id = item.weaponId;
+                final id = item.id;
                 bool avaiable = true;
                 final itemMaterials = item.materials();
                 final pos = itemMaterials.remove(0) ?? 0;
@@ -290,11 +292,10 @@ class PlayForgingState extends State<PlayForgingScreen> {
     final name = _weaponsItems[_selectedWeapon]?.name ?? '';
     final pos = _weaponsItems[_selectedWeapon]?.pos ?? 1;
 
-    final res = await weapon.create(selectedMaterialsNum, name, pos);
+    final res = await weapon.create(selectedMaterialsNum, name, pos, mm);
 
     _loading = false;
     if (res) {
-      mm.weaponUsed(selectedMaterialsNum);
       successCallback();
       // success
     }
@@ -349,10 +350,12 @@ class CreateCharacterDialogState extends State<CreateCharacterDialog> {
       _loading = true;
     });
 
+    final mm = context.read<MaterialModel>();
     final res = await context.read<WeaponModel>().create(
       widget.materials,
       name,
       pos,
+      mm,
     );
 
     _loading = false;
@@ -361,7 +364,6 @@ class CreateCharacterDialogState extends State<CreateCharacterDialog> {
         _error = '成功放入背包！';
       });
       widget.callback();
-      if (context.mounted) context.read<MaterialModel>().weaponUsed(widget.materials);
       Future.delayed(Duration(seconds: 1), () {
         if (context.mounted) Navigator.of(context).pop();
       });

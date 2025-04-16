@@ -123,7 +123,7 @@ class PlayMarketState extends State<PlayMarketScreen> {
             ),
             TextButton(
               onPressed: () async {
-                await market.buy(item.mtype, item.id);
+                await market.buy(item.mtype, item.id, context);
                 if (context.mounted) Navigator.pop(context);
               },
               child: Text('确认购买'),
@@ -178,6 +178,27 @@ class CreateMarketDialogState extends State<CreateMarketDialog> {
 
     final res = await context.read<MarketModel>().create(mtype, item, coin);
 
+    if (context.mounted) {
+      switch (mtype) {
+        case 1:
+          final material = context.read<MaterialModel>();
+          material.elixirsItems[item]?.number -= 1;
+          material.weaponItems[item]?.number -= 1;
+          break;
+        case 2:
+          // kungfu not reduce
+          break;
+        case 3:
+          context.read<ElixirModel>().items[item]?.number -= 1;
+          break;
+        case 4:
+          context.read<WeaponModel>().items[item]?.number -= 1;
+          break;
+        default:
+          break;
+      }
+    }
+
     _loading = false;
     if (res) {
       if (context.mounted) Navigator.of(context).pop();
@@ -227,10 +248,7 @@ class CreateMarketDialogState extends State<CreateMarketDialog> {
             if (_mtype != null && _mtype != 1)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Text(
-                  '只有 提取(claim) 过的物品，才可以进行出售',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                ),
+                child: Text('只有解锁的物品，才可以进行出售'),
               ),
             SizedBox(
               width: double.infinity,

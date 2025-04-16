@@ -159,35 +159,37 @@ class MyApp extends StatelessWidget {
     GoRoute(
       path: '/play/kungfu',
       builder: (context, state) {
-        context.read<KungfuModel>().load();
+        context.read<KungfuModel>().load(false);
         return const PlayKungfuScreen(key: Key('play_kungfu'));
       },
     ),
     GoRoute(
       path: '/play/weapon',
       builder: (context, state) {
-        context.read<WeaponModel>().load();
+        context.read<WeaponModel>().load(false);
         return const PlayWeaponScreen(key: Key('play_weapon'));
       },
     ),
     GoRoute(
       path: '/play/bag',
       builder: (context, state) {
-        context.read<MaterialModel>().load();
+        context.read<MaterialModel>().load(false);
         return const PlayBagScreen(key: Key('play_bag'));
       },
     ),
     GoRoute(
       path: '/play/elixir',
       builder: (context, state) {
-        context.read<ElixirModel>().load();
+        context.read<MaterialModel>().load(false);
+        context.read<ElixirModel>().load(false);
         return const PlayElixirScreen(key: Key('play_elixir'));
       },
     ),
     GoRoute(
       path: '/play/forging',
       builder: (context, state) {
-        context.read<WeaponModel>().load();
+        context.read<MaterialModel>().load(false);
+        context.read<WeaponModel>().load(false);
         return const PlayForgingScreen(key: Key('play_forging'));
       },
     ),

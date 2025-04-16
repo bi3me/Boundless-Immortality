@@ -7,7 +7,7 @@ import '../common/auth_http.dart';
 const elixirEveryLevelMax = 20;
 
 class ElixirItem {
-  final int elixirId;
+  final int id;
   final String name;
   final int attribute;
   final int level;
@@ -18,15 +18,13 @@ class ElixirItem {
   final int powerHit;
   final int powerDodge;
   final String material;
-  final int? nftOwner;
-  final String? nftName;
   int number;
+  bool locking;
 
   ElixirItem(
-    this.elixirId,
+    this.id,
     this.name,
     this.attribute,
-    this.number,
     this.level,
     this.levelAdd,
     this.powerHp,
@@ -35,8 +33,8 @@ class ElixirItem {
     this.powerHit,
     this.powerDodge,
     this.material,
-    this.nftOwner,
-    this.nftName,
+    this.number,
+    this.locking,
   );
 
   Map<int, int> materials() {
@@ -79,35 +77,57 @@ class ElixirModel extends ChangeNotifier {
   List<(int, String)> availableForSale() {
     List<(int, String)> list = [];
     items.forEach((_, v) {
-      if (v.nftOwner != null && v.number > 1) {
-        list.add((v.elixirId, v.nftName ?? v.name));
+      if (!v.locking) {
+        list.add((v.id, v.name));
       }
     });
 
     return list;
   }
 
-  void eat(int elixirId, UserModel user) async {
-    items[elixirId]?.number -= 1;
-    if (items[elixirId]?.number == 0) {
-      items.remove(elixirId);
+  void eat(int id, UserModel user) async {
+    if ((items[id]?.number ?? 0) < 1) {
+      return;
     }
 
     // send to service
     var response = await AuthHttpClient().post(
-      AuthHttpClient.uri("users/elixirs-eat/$elixirId"),
+      AuthHttpClient.uri("users/elixirs-eat/$id"),
     );
 
     final data = AuthHttpClient.res(response);
     if (data == null) {
       // none
     } else {
+      items[id]?.number -= 1;
+      if (items[id]?.number == 0) {
+        items.remove(id);
+      }
+
       user.update(data); // update user
       notifyListeners();
     }
   }
 
-  Future<bool> create(Map<int, int> materials, String name) async {
+  Future<void> unlock(int id, UserModel user) async {
+    // send to service
+    final response = await AuthHttpClient().post(
+      AuthHttpClient.uri("users/elixirs-unlock/$id"),
+    );
+
+    final data = AuthHttpClient.res(response);
+    if (data != null) {
+      items[id]?.locking = false;
+      user.settle();
+      notifyListeners();
+    }
+  }
+
+  Future<bool> create(
+    Map<int, int> materials,
+    String name,
+    MaterialModel mm,
+  ) async {
     final materialsZip = ElixirItem.materialsZip(materials);
     var response = await AuthHttpClient().post(
       AuthHttpClient.uri('users/elixirs'),
@@ -119,6 +139,7 @@ class ElixirModel extends ChangeNotifier {
       return false;
     } else {
       fromNetwork(data);
+      mm.elixirUsed(materials);
       notifyListeners();
       return true;
     }
@@ -126,10 +147,9 @@ class ElixirModel extends ChangeNotifier {
 
   /// Update user data from network (fully info)
   void fromNetwork(Map<String, dynamic> item) {
-    final elixirId = item['elixir_id'];
+    final id = item['id'];
     final name = item['name'];
     final attribute = item['attribute'];
-    final number = item['num'];
     final level = item['level'];
     final levelAdd = item['level_add'];
     final powerHp = item['power_hp'];
@@ -138,14 +158,13 @@ class ElixirModel extends ChangeNotifier {
     final powerHit = item['power_hit'];
     final powerDodge = item['power_dodge'];
     final material = item['materials'];
-    final nftOwner = item['nft_owner'];
-    final nftName = item['nft_name'];
+    final number = item['num'];
+    final locking = item['locking'];
 
-    items[elixirId] = ElixirItem(
-      elixirId,
+    items[id] = ElixirItem(
+      id,
       name,
       attribute,
-      number,
       level,
       levelAdd,
       powerHp,
@@ -154,8 +173,8 @@ class ElixirModel extends ChangeNotifier {
       powerHit,
       powerDodge,
       material,
-      nftOwner,
-      nftName,
+      number,
+      locking,
     );
 
     final count = countByLevel[level] ?? 0;
@@ -167,14 +186,15 @@ class ElixirModel extends ChangeNotifier {
   }
 
   /// Loading elixirs
-  Future<void> load() async {
-    if (items.isEmpty) {
+  Future<void> load(bool force) async {
+    if (force || items.isEmpty) {
       final response = await AuthHttpClient().get(
         AuthHttpClient.uri('users/elixirs'),
       );
 
       final data = AuthHttpClient.res(response);
       if (data != null) {
+        clear();
         for (var item in data['data']) {
           fromNetwork(item);
         }

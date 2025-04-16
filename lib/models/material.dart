@@ -79,10 +79,6 @@ class MaterialModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void recycle(int id) async {
-    //
-  }
-
   static MaterialItem parseNetwork(Map<String, dynamic> item) {
     final materialId = item['material_id'];
     final number = item['num'];
@@ -119,14 +115,15 @@ class MaterialModel extends ChangeNotifier {
   }
 
   /// Loading kungfus
-  Future<void> load() async {
-    if (elixirsItems.isEmpty && weaponItems.isEmpty) {
+  Future<void> load(bool force) async {
+    if (force || (elixirsItems.isEmpty && weaponItems.isEmpty)) {
       final response = await AuthHttpClient().get(
         AuthHttpClient.uri('users/materials'),
       );
 
       final data = AuthHttpClient.res(response);
       if (data != null) {
+        clear();
         for (var item in data['data']) {
           fromNetwork(item);
         }
