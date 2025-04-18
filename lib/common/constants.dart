@@ -103,3 +103,25 @@ int? calculateAttribute(String input) {
   if (attribute == 0) attribute = 5;
   return attribute;
 }
+
+const String defaultRpc = 'https://ethereum.blockpi.network/v1/rpc/public';
+const String defaultRpc2 = 'https://sepolia.blockpi.network/v1/rpc/public';
+
+const String abi = '''
+    [
+      {
+        "constant": true,
+        "inputs": [{"name": "account", "type": "address"}],
+        "name": "balanceOf",
+        "outputs": [{"name": "", "type": "uint256"}],
+        "type": "function"
+      }
+    ]
+''';
+
+const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
+const usdcAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+const usdsAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+
+const STRIPE_PK =
+    'pk_test_51REg7F2Rt3NQ6pE85rDMuuoX7kepxCM9jPOcPmf1KOq0CbauXFf624tfBmS4FudUxK3IXUzUwlbV5QeBRNVgOJlq0051VgrwMB';

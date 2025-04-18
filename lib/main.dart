@@ -31,6 +31,7 @@ import 'screens/friend/friend_screen.dart';
 import 'screens/mate/mate_screen.dart';
 import 'screens/market/market_screen.dart';
 import 'screens/travel/travel_screen.dart';
+import 'screens/plant/plant_screen.dart';
 
 import 'models/broadcast.dart';
 import 'models/duel.dart';
@@ -42,6 +43,7 @@ import 'models/material.dart';
 import 'models/travel.dart';
 import 'models/user.dart';
 import 'models/weapon.dart';
+import 'models/plant.dart';
 
 Future<void> main() async {
   // Subscribe to log messages.
@@ -194,6 +196,13 @@ class MyApp extends StatelessWidget {
       },
     ),
     GoRoute(
+      path: '/play/plant',
+      builder: (context, state) {
+        context.read<PlantModel>().load(false);
+        return const PlayPlantScreen(key: Key('play_plant'));
+      },
+    ),
+    GoRoute(
       path: '/play/duel',
       builder: (context, state) {
         context.read<DuelModel>().load();
@@ -257,6 +266,7 @@ class MyApp extends StatelessWidget {
           ChangeNotifierProvider(create: (context) => DuelModel()),
           ChangeNotifierProvider(create: (context) => MarketModel()),
           ChangeNotifierProvider(create: (context) => TravelModel()),
+          ChangeNotifierProvider(create: (context) => PlantModel()),
           // Provider<AdsController?>.value(value: adsController),
           // ChangeNotifierProvider<InAppPurchaseController?>.value(
           //   value: inAppPurchaseController,
