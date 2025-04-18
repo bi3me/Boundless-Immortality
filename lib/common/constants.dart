@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-// const String domain = 'https://bi3.me';
-const String domain = 'http://127.0.0.1:9000';
+const String domain = 'https://bi3.me';
+// const String domain = 'http://127.0.0.1:9000';
 
 const int unlockCoin = 20;
 
@@ -105,7 +105,7 @@ int? calculateAttribute(String input) {
 }
 
 const String defaultRpc = 'https://ethereum.blockpi.network/v1/rpc/public';
-const String defaultRpc2 = 'https://sepolia.blockpi.network/v1/rpc/public';
+const String defaultRpc2 = 'https://ethereum-sepolia.blockpi.network/v1/rpc/public';
 
 const String abi = '''
     [
@@ -121,7 +121,9 @@ const String abi = '''
 
 const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 const usdcAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
-const usdsAddress = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+const usdsAddress = '0x0dE254a722BD16C2E647B444C448D2a911deb8d5';
+
+//const STRIPE_PK = 'pk_test_51REg7F2Rt3NQ6pE85rDMuuoX7kepxCM9jPOcPmf1KOq0CbauXFf624tfBmS4FudUxK3IXUzUwlbV5QeBRNVgOJlq0051VgrwMB'; // TEST
 
 const STRIPE_PK =
-    'pk_test_51REg7F2Rt3NQ6pE85rDMuuoX7kepxCM9jPOcPmf1KOq0CbauXFf624tfBmS4FudUxK3IXUzUwlbV5QeBRNVgOJlq0051VgrwMB';
+    'pk_live_51REg6ME2bReqhB7sourEDb9XGwJCb2OwxvSW9gPzEUFrhdERmXXfRjDngby0landw0wFVv8QeadhwlctwKkzUVZl000ovTpDO4';
