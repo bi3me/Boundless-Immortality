@@ -153,8 +153,7 @@ class KungfuModel extends ChangeNotifier {
     }
   }
 
-  /// Update user data from network (fully info)
-  void fromNetwork(Map<String, dynamic> item) {
+  static KungfuItem parseNetwork(Map<String, dynamic> item) {
     final id = item['id'];
     final name = item['name'];
     final attribute = item['attribute'];
@@ -163,25 +162,24 @@ class KungfuModel extends ChangeNotifier {
     final working = item['working'];
     final locking = item['locking'];
 
-    if (working) {
-      nowWorking = id;
+    return KungfuItem(id, name, attribute, level, powers, working, locking);
+  }
+
+  /// Update user data from network (fully info)
+  void fromNetwork(Map<String, dynamic> data) {
+    final item = parseNetwork(data);
+
+    if (item.working) {
+      nowWorking = item.id;
     }
 
-    items[id] = KungfuItem(
-      id,
-      name,
-      attribute,
-      level,
-      powers,
-      working,
-      locking,
-    );
+    items[item.id] = item;
 
-    final count = countByLevel[level] ?? 0;
+    final count = countByLevel[item.level] ?? 0;
     if (count == 0) {
-      countByLevel[level] = 1;
+      countByLevel[item.level] = 1;
     } else {
-      countByLevel[level] = count + 1;
+      countByLevel[item.level] = count + 1;
     }
   }
 

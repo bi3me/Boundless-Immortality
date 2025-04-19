@@ -34,6 +34,13 @@ class MarketModel extends ChangeNotifier {
   Map<int, MarketItem> elixirs = {};
   Map<int, MarketItem> weapons = {};
 
+  Future<Map<String, dynamic>?> fetchItem(int id) async {
+    final response = await AuthHttpClient().get(
+      AuthHttpClient.uri('users/market-item/$id')
+    );
+    return AuthHttpClient.res(response);
+  }
+
   Future<bool> create(int mtype, int id, int coin) async {
     final response = await AuthHttpClient().post(
       AuthHttpClient.uri('users/market'),

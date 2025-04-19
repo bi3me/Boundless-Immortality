@@ -145,8 +145,7 @@ class ElixirModel extends ChangeNotifier {
     }
   }
 
-  /// Update user data from network (fully info)
-  void fromNetwork(Map<String, dynamic> item) {
+  static ElixirItem parseNetwork(Map<String, dynamic> item) {
     final id = item['id'];
     final name = item['name'];
     final attribute = item['attribute'];
@@ -161,7 +160,7 @@ class ElixirModel extends ChangeNotifier {
     final number = item['num'];
     final locking = item['locking'];
 
-    items[id] = ElixirItem(
+    return ElixirItem(
       id,
       name,
       attribute,
@@ -176,12 +175,18 @@ class ElixirModel extends ChangeNotifier {
       number,
       locking,
     );
+  }
 
-    final count = countByLevel[level] ?? 0;
+  /// Update user data from network (fully info)
+  void fromNetwork(Map<String, dynamic> data) {
+    final item = parseNetwork(data);
+    items[item.id] = item;
+
+    final count = countByLevel[item.level] ?? 0;
     if (count == 0) {
-      countByLevel[level] = 1;
+      countByLevel[item.level] = 1;
     } else {
-      countByLevel[level] = count + 1;
+      countByLevel[item.level] = count + 1;
     }
   }
 

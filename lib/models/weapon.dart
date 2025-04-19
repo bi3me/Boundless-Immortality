@@ -157,8 +157,7 @@ class WeaponModel extends ChangeNotifier {
     }
   }
 
-  /// Update user data from network (fully info)
-  void fromNetwork(Map<String, dynamic> item) {
+  static WeaponItem parseNetwork(Map<String, dynamic> item) {
     final id = item['id'];
     final name = item['name'];
     final attribute = item['attribute'];
@@ -174,7 +173,7 @@ class WeaponModel extends ChangeNotifier {
     final working = item['working'];
     final locking = item['locking'];
 
-    items[id] = WeaponItem(
+    return WeaponItem(
       id,
       name,
       attribute,
@@ -190,21 +189,27 @@ class WeaponModel extends ChangeNotifier {
       working,
       locking,
     );
+  }
 
-    final has = poses[pos]?.contains(id) ?? false;
+  /// Update user data from network (fully info)
+  void fromNetwork(Map<String, dynamic> data) {
+    final item = parseNetwork(data);
+    items[item.id] = item;
+
+    final has = poses[item.pos]?.contains(item.id) ?? false;
     if (!has) {
-      if (poses[pos] == null) {
-        poses[pos] = [id];
+      if (poses[item.pos] == null) {
+        poses[item.pos] = [item.id];
       } else {
-        poses[pos]?.add(id);
+        poses[item.pos]?.add(item.id);
       }
     }
 
-    final count = countByLevel[level] ?? 0;
+    final count = countByLevel[item.level] ?? 0;
     if (count == 0) {
-      countByLevel[level] = 1;
+      countByLevel[item.level] = 1;
     } else {
-      countByLevel[level] = count + 1;
+      countByLevel[item.level] = count + 1;
     }
   }
 

@@ -19,6 +19,7 @@ class PlayMarketScreen extends StatefulWidget {
 
 class PlayMarketState extends State<PlayMarketScreen> {
   int _selectedIndex = 0;
+  Map<int, Map<String, dynamic>> cache = {};
 
   @override
   Widget build(BuildContext context) {
@@ -76,24 +77,41 @@ class PlayMarketState extends State<PlayMarketScreen> {
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, index) {
+        final item = items[index];
         return Card(
           margin: EdgeInsets.symmetric(vertical: 4),
           child: ListTile(
-            title: Text(items[index].itemName),
-            subtitle: Text("${attributes[items[index].itemAttribute]} 属性"),
+            title: GestureDetector(
+              onTap: () async {
+                final info = cache[item.id] ?? await market.fetchItem(item.id);
+                if (info != null && context.mounted) {
+                  cache[item.id] = info;
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext dialogContext) {
+                      return CreateItemDialog(item, info['data']);
+                    },
+                  );
+                }
+              },
+              child: Text(item.itemName),
+            ),
+            subtitle: Text(
+              "${attributes[item.itemAttribute]} 属性",
+              style: TextStyle(fontSize: 10),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text("${items[index].coin} 灵石"),
+                  child: Text("${item.coin} 灵石"),
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 8),
                   ),
-                  onPressed:
-                      () => _showBuyDialog(context, items[index], market),
+                  onPressed: () => _showBuyDialog(context, item, market),
                   child: Text('购买'),
                 ),
               ],
@@ -240,7 +258,7 @@ class CreateMarketDialogState extends State<CreateMarketDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('擂台'),
+      title: Text('出售'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -300,6 +318,108 @@ class CreateMarketDialogState extends State<CreateMarketDialog> {
         ElevatedButton(
           onPressed: _loading ? null : () => _submitData(context),
           child: Text(_loading ? '出售中' : '出售'),
+        ),
+      ],
+    );
+  }
+}
+
+class CreateItemDialog extends StatefulWidget {
+  final MarketItem item;
+  final Map<String, dynamic> info;
+  const CreateItemDialog(this.item, this.info, {super.key});
+
+  @override
+  CreateItemDialogState createState() => CreateItemDialogState();
+}
+
+class CreateItemDialogState extends State<CreateItemDialog> {
+  @override
+  Widget build(BuildContext context) {
+    var level = '无';
+    var h0 = 0;
+    var h1 = 0;
+    var h2 = 0;
+    var h3 = 0;
+    var h4 = 0;
+    var h5 = 0;
+
+    switch (widget.item.mtype) {
+      case 1:
+        final i = MaterialModel.parseNetwork(widget.info);
+        final (h11, h22, h33, h44, h55) = i.powers();
+        h0 = i.levelAdd;
+        h1 = h11;
+        h2 = h22;
+        h3 = h33;
+        h4 = h44;
+        h5 = h55;
+        break;
+      case 2:
+        final i = KungfuModel.parseNetwork(widget.info);
+        final (h11, h22, h33, h44, h55) = i.getPowers();
+        level = levels[i.level];
+        h1 = h11;
+        h2 = h22;
+        h3 = h33;
+        h4 = h44;
+        h5 = h55;
+        break;
+      case 3:
+        final i = ElixirModel.parseNetwork(widget.info);
+        level = levels[i.level];
+        h0 = i.levelAdd;
+        h1 = i.powerHp;
+        h2 = i.powerAttack;
+        h3 = i.powerDefense;
+        h4 = i.powerHit;
+        h5 = i.powerDodge;
+        break;
+      case 4:
+        final i = WeaponModel.parseNetwork(widget.info);
+        level = levels[i.level];
+        h1 = i.powerHp;
+        h2 = i.powerAttack;
+        h3 = i.powerDefense;
+        h4 = i.powerHit;
+        h5 = i.powerDodge;
+        break;
+      default:
+        break;
+    }
+    return AlertDialog(
+      title: Text(widget.item.itemName),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("属性：${attributes[widget.item.itemAttribute]}"),
+            Text("等级：$level"),
+            Text("修为：$h0"),
+            Text("生命：$h1"),
+            Text("攻击：$h2"),
+            Text("防御：$h3"),
+            Text("暴击：$h4"),
+            Text("闪避：$h5"),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('取消'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            await context.read<MarketModel>().buy(
+              widget.item.mtype,
+              widget.item.id,
+              context,
+            );
+            if (context.mounted) Navigator.pop(context);
+          },
+          child: Text('购买'),
         ),
       ],
     );
